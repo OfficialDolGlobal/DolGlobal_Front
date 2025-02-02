@@ -1,0 +1,151 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+
+@keyframes shine {
+  0% {
+    transform: skew(-45deg) translateX(-150%);
+  }
+  50%, 100% {
+    transform: skew(-45deg) translateX(150%);
+  }
+}
+
+.animate-shine:before {
+  animation: shine 3s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+
+@keyframes shine {
+  from {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  to {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+.animate-shine {
+  animation: shine 2s infinite linear;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-slow {
+  0% {
+    filter: drop-shadow(0 0 8px rgba(85,209,255,0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(85,209,255,0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 8px rgba(85,209,255,0.5));
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+.bg-conic-gradient {
+  background: conic-gradient(
+    from 90deg at 50% 50%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(85, 209, 255, 0.2) 50%
+  );
+}
+
+.logo-circle {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(45deg, rgba(85, 209, 255, 0.2), rgba(8, 75, 238, 0.2));
+  box-shadow: 0 0 20px rgba(85, 209, 255, 0.3);
+  overflow: hidden;
+}
+
+.logo-circle::before {
+  content: '';
+  position: absolute;
+  width: 150%;
+  height: 150%;
+  background: conic-gradient(
+    from 90deg at 50% 50%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.2) 50%
+  );
+  animation: spin-slow 4s linear infinite;
+}
+
+.logo-circle img {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 8px rgba(85, 209, 255, 0.5));
+  animation: pulse-slow 2s ease-in-out infinite;
+}

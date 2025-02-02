@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variáveis de cores */
+:root {
+  --gradient-primary: linear-gradient(135deg, #00C6FB 0%, #005BEA 100%);
+  --gradient-secondary: linear-gradient(135deg, #FF57B9 0%, #A704FD 100%);
+  --gradient-success: linear-gradient(135deg, #3CD500 0%, #24A537 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  --glass-bg: rgba(15, 17, 27, 0.85);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+  --shadow-strong: 0 8px 32px 0 rgba(0, 0, 0, 0.48);
+}
+
+/* Estilos globais */
+body {
+  background: #0A0C15;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Animações */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px #00ffff40; }
+  50% { box-shadow: 0 0 20px #00ffff40; }
+  100% { box-shadow: 0 0 5px #00ffff40; }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+/* Estilizações de gradientes */
+.gradient-text {
+  @apply bg-gradient-to-r from-[#00ffff] to-[#0057ff] bg-clip-text text-transparent;
+}
+
+.gradient-border {
+  @apply border border-[#00ffff20] hover:border-[#00ffff40] transition-colors;
+}
+
+.glass-effect {
+  @apply bg-[#001242]/80 backdrop-blur-xl;
+}
+
+/* Estilo do scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #001242;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00ffff40;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00ffff60;
+}
