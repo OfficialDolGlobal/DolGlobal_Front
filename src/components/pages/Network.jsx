@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { ChevronDown, Copy, Users, Link as LinkIcon } from "lucide-react";
 import { ethers } from "ethers";
 import CONTRACT_ABI from "../../abis/user.abi.json";
@@ -19,6 +20,8 @@ const USER_CONTRACT = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const COLLECTION_CONTRACT = import.meta.env.VITE_COLLECTION_ADDRESS;
 
 const NetworkNode = ({ user, level, expandedNodes, onToggle }) => {
+
+  
   const hasChildren = user.referrals && user.referrals.length > 0;
   const isExpanded = expandedNodes.has(user.wallet);
 
@@ -138,7 +141,6 @@ const NetworkNodeLoader = ({ userAddress, level, expandedNodes, onToggle }) => {
     />
   );
 };
-
 const Network = ({ userWallet }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
@@ -146,17 +148,39 @@ const Network = ({ userWallet }) => {
   const showNotification = useNotification();
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [copied, setCopied] = useState(false);
-  const [networkData, setNetworkData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalVolume: "0",
     directReferrals: 0,
+    indirectReferrals: 0,
     totalUsers: 0,
     maxUnilevel: 0,
     unilevelReached: 0,
   });
   const [investment, setInvestment] = useState(10);
   const [allowanceNft, setAllowanceNft] = useState(0);
+  const [networkData, setNetworkData] = useState({ tree: [], directs: 0, indirects: 0 });
+  useEffect(() => {
+    const fetchNetworkData = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`https://api2-btc-aid.vercel.app/api/tree?sponsorId=${userWallet}`);
+        const directs = response.data.directs ?? 0;
+        const indirects = response.data.indirects ?? 0;
+    
+        setNetworkData({ ...response.data, directs, indirects });        
+        setLoading(false);
+      } catch (err) {
+        
+        setError(err);
+        setLoading(false);
+      }
+    };
+
+    if (userWallet) {
+      fetchNetworkData();
+    }
+  }, [userWallet]);
 
   const handleApprove = async () => {
     if (!investment) {
@@ -255,7 +279,8 @@ const Network = ({ userWallet }) => {
             totalInvested + totalEarnedTreasury,
             6
           ),
-          directReferrals: user[3].length,
+          directReferrals: stats.directReferrals,
+          indirectReferrals: stats.indirectReferrals,
           totalUsers: user[3].length,
           maxUnilevel: availableUnilevelStruct[0],
           unilevelReached: availableUnilevelStruct[1],
@@ -413,18 +438,19 @@ const Network = ({ userWallet }) => {
           label="Volume Total"
           value={`${Number(stats.totalVolume).toLocaleString()} USDT`}
         />
-        <StatCard label="Diretos" value={`${stats.directReferrals} Usuários`} />
-        <StatCard label="Indiretos" value={`${stats.totalUsers} Usuários`} />
-      </div>
 
+        <StatCard label="Diretos" value={`${String(networkData.directs)} Usuários`} />
+        <StatCard label="Indiretos" value={`${String(networkData.indirects)} Usuários`} />
+      </div>
+  
       <div className="bg-[#001242]/80 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-[#00ffff20] overflow-x-auto">
         <div className="min-w-[300px] md:min-w-[600px] p-4">
-          <NetworkNode
-            user={networkData}
+          {/* <NetworkNode
+            user={networkData.tree}
             level={0}
             expandedNodes={expandedNodes}
             onToggle={toggleNode}
-          />
+          /> */}
         </div>
       </div>
     </div>
