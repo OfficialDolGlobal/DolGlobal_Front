@@ -1,32 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { LogOut, Wallet, CircleDot, X } from 'lucide-react';
-import VerificationSection from './VerificationSection';
-const userContract = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
+import React from "react";
+import { LogOut, Wallet, CircleDot, ExternalLink } from "lucide-react";
+import VerificationSection from "./VerificationSection";
 
-const Profile = ({ userWallet, setUserWallet }) => {
-  const [showRamp, setShowRamp] = useState(false);
-  const [iframeKey, setIframeKey] = useState(0);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
-
-  useEffect(() => {
-    if (showRamp && isFirstLoad) {
-      const timer = setTimeout(() => {
-        setIframeKey(prev => prev + 1);
-        setIsFirstLoad(false);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [showRamp, isFirstLoad]);
-
-  const handleCloseRamp = () => {
-    setShowRamp(false);
-    setIsFirstLoad(true);
+const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
+  const truncateAddress = (address) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const truncateAddress = (address) => {
-    if (!address) return '';
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  const handleOpenExchange = () => {
+    window.open(
+      "https://ramp.alchemypay.org/?type=offRamp&crypto=USDT&network=MATIC&fiat=BRL",
+      "_blank"
+    );
+  };
+
+  const disconnectWallet = async () => {
+    try {
+      // Limpa estado local
+      setUserWallet(null);
+      localStorage.removeItem('userWallet');
+      sessionStorage.clear();
+      
+      // Desconecta do MetaMask
+      if (window.ethereum) {
+        await window.ethereum.request({
+          method: "eth_requestAccounts",
+          params: [{ eth_accounts: {} }],
+        });
+      }
+
+      // Recarrega a página para limpar todos os estados
+      window.location.href = '/';
+    } catch (error) {
+      console.error("Erro ao desconectar:", error);
+      // Força desconexão mesmo com erro
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -35,7 +45,7 @@ const Profile = ({ userWallet, setUserWallet }) => {
         {/* Card Principal */}
         <div className="relative bg-[#001242]/80 backdrop-blur-xl rounded-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#00ffff10] to-[#0057ff10] animate-pulse" />
-          
+
           {/* Conteúdo */}
           <div className="relative p-6 space-y-6">
             {/* Header com Avatar */}
@@ -51,18 +61,25 @@ const Profile = ({ userWallet, setUserWallet }) => {
             </div>
 
             {/* Box Compra/Venda USDT */}
-            <button 
-              onClick={() => setShowRamp(true)}
+            <button
+              onClick={handleOpenExchange}
               className="w-full group transition-all duration-300"
             >
               <div className="flex items-center justify-between p-4 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40]">
                 <div className="flex items-center space-x-3">
-                  <img 
-                    src="https://s3-eu-west-1.amazonaws.com/tpd/logos/62d7dd0b326019737dcbc711/0x0.png" 
-                    alt="AlchemyPay" 
+                  <img
+                    src="https://s3-eu-west-1.amazonaws.com/tpd/logos/62d7dd0b326019737dcbc711/0x0.png"
+                    alt="AlchemyPay"
                     className="w-8 h-8 rounded-full"
                   />
-                  <span className="text-[#00ffff] font-medium">Compre/Venda USDT</span>
+                  <div className="flex flex-col text-left">
+                    <span className="text-[#00ffff] font-medium">
+                      Comprar/Vender USDT
+                    </span>
+                    <span className="text-xs text-white/60 flex items-center gap-1">
+                      Abrir no navegador <ExternalLink className="w-3 h-3" />
+                    </span>
+                  </div>
                 </div>
                 <span className="text-white/60">→</span>
               </div>
@@ -81,43 +98,22 @@ const Profile = ({ userWallet, setUserWallet }) => {
             </div>
 
             {/* Seção de Verificação */}
-            <VerificationSection 
-              userWallet={userWallet}
-            />
+            <VerificationSection userWallet={userWallet} />
 
             {/* Botão de Logout */}
-            <button 
-              onClick={() => setUserWallet(null)}
+            <button
+              onClick={disconnectWallet}
               className="w-full relative group"
             >
               <div className="relative px-6 py-3 flex items-center justify-center space-x-3 border border-red-500/20 rounded-xl group-hover:border-red-500/40 transition-all duration-300">
                 <LogOut className="w-5 h-5 text-red-500" />
-                <span className="text-red-500 font-medium">Desconectar Carteira</span>
+                <span className="text-red-500 font-medium">
+                  Desconectar Carteira
+                </span>
               </div>
             </button>
           </div>
         </div>
-
-        {/* Modal do Ramp */}
-        {showRamp && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-            <div className="relative w-full max-w-4xl h-[80vh] bg-white rounded-2xl overflow-hidden">
-              <button 
-                onClick={handleCloseRamp}
-                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/10 hover:bg-black/20 transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <iframe
-                key={iframeKey}
-                src="https://ramp.alchemypay.org/?type=offRamp&crypto=USDT&network=MATIC&fiat=BRL"
-                className="w-full h-full"
-                frameBorder="0"
-                title="AlchemyPay Ramp"
-              />
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

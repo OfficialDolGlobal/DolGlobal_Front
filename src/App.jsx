@@ -15,11 +15,10 @@ import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-
 const API_URL = "https://dol-server.vercel.app";
+const IPINFO_TOKEN = "3c3735468fa3e5";
 
 const App = () => {
-  // Estado original
   const [isConnected, setIsConnected] = useState(false);
   const [activePage, setActivePage] = useState("home");
   const [isContributionModalOpen, setIsContributionModalOpen] = useState(false);
@@ -29,15 +28,12 @@ const App = () => {
   // Estados para o cadastro
   const [registrationStep, setRegistrationStep] = useState("start");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [emailCode, setEmailCode] = useState("");
-  const [phoneCode, setPhoneCode] = useState("");
   const [sponsorAddress, setSponsorAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState(null);
-  const [locationPermission, setLocationPermission] = useState(true);
 
   // Verificar parâmetro de referência na URL ao carregar
   useEffect(() => {
@@ -46,20 +42,48 @@ const App = () => {
     if (ref && ref.length === 42 && ref.startsWith("0x")) {
       const address = ref.toLowerCase();
       setSponsorAddress(address);
-      // Se estiver no passo de sponsor, verificar automaticamente
       if (registrationStep === "sponsor") {
         verifySponsor();
       }
     }
   }, []);
 
-  // Verificar se o usuário já existe quando conectar a carteira
+  async function getUserLocation() {
+    try {
+      // Usando apenas ipinfo.io para obter a localização
+      const response = await axios.get(`https://ipinfo.io/json?token=${IPINFO_TOKEN}`);
+      const { country, region, city, postal, loc } = response.data;
+      const [latitude, longitude] = loc.split(',').map(coord => parseFloat(coord));
+
+      return {
+        country,
+        country_code: country,
+        state: region,
+        city,
+        postcode: postal,
+        latitude,
+        longitude,
+      };
+    } catch (error) {
+      console.error("Error getting location from IP:", error);
+      // Em caso de erro, retornamos um objeto vazio mas válido
+      return {
+        country: "",
+        country_code: "",
+        state: "",
+        city: "",
+        postcode: "",
+        latitude: 0,
+        longitude: 0
+      };
+    }
+  }
+
   const checkExistingUser = async (address) => {
     try {
       const response = await axios.post(`${API_URL}/api/verify-user`, {
         walletAddress: address.toLowerCase(),
       });
-      // Agora incluindo dados do supabase na resposta
       return {
         exists: response.data.exists,
         faceId: response.data.faceId,
@@ -71,7 +95,6 @@ const App = () => {
     }
   };
 
-  // Função para verificar se email/telefone já existem
   const checkDuplicateData = async (type, value) => {
     try {
       const { data: existingUser } = await supabase
@@ -83,46 +106,14 @@ const App = () => {
       if (existingUser) {
         throw new Error(`This ${type} is already registered`);
       }
-
       return false;
     } catch (error) {
       if (error.message.includes("already registered")) {
         throw error;
       }
-      // Se o erro for que não encontrou o registro, retorna false
       return false;
     }
   };
-
-  async function getUserLocation() {
-    try {
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
-      });
-
-      const { latitude, longitude } = position.coords;
-
-      // Usar a API do Nominatim para obter detalhes do endereço
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-      );
-
-      const address = response.data.address;
-
-      return {
-        country: address.country,
-        country_code: address.country_code?.toUpperCase(),
-        state: address.state,
-        city: address.city || address.town || address.village,
-        postcode: address.postcode,
-        latitude,
-        longitude,
-      };
-    } catch (error) {
-      console.error("Error getting location:", error);
-      return null;
-    }
-  }
 
   const handleConnect = async () => {
     try {
@@ -168,7 +159,6 @@ const App = () => {
             const address = accounts[0];
             setUserWallet(address);
 
-            // Verificar se o usuário existe
             const existingUser = await checkExistingUser(address);
             if (existingUser?.exists) {
               setUserData(existingUser);
@@ -196,7 +186,6 @@ const App = () => {
     setUserData(null);
   };
 
-  // Funções de cadastro
   const verifySponsor = async () => {
     try {
       setLoading(true);
@@ -224,7 +213,6 @@ const App = () => {
       setLoading(true);
       setError("");
 
-      // Verificar se email já existe
       await checkDuplicateData("email", emailToVerify);
 
       await axios.post(`${API_URL}/api/send-email`, {
@@ -243,67 +231,23 @@ const App = () => {
     try {
       setLoading(true);
       setError("");
-  
+
       console.log('Enviando verificação:', {
         email: emailToVerify,
         code: codeToVerify
-      }); // Log para debug
-  
+      });
+
       const response = await axios.post(`${API_URL}/api/verify-email`, {
         email: emailToVerify,
-        code: codeToVerify.toString().trim() // Garantir que o código está como string e sem espaços
+        code: codeToVerify.toString().trim()
       });
-  
+
       if (response.data.success) {
-        setRegistrationStep("phone");
-        setSuccess("Email verified successfully");
+        await registerUser(); // Agora registra o usuário direto após verificar o email
       }
     } catch (error) {
-      console.error('Erro na verificação:', error); // Log para debug
+      console.error('Erro na verificação:', error);
       setError(error.response?.data?.error || "Invalid email code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendPhoneCode = async (phoneNumber) => {
-    // Receber o número direto como parâmetro
-    try {
-      setLoading(true);
-      setError("");
-
-      // Verificar se telefone já existe
-      await checkDuplicateData("phone", phoneNumber);
-
-      await axios.post(`${API_URL}/api/send-sms`, {
-        phoneNumber, // Usar o parâmetro direto, não o estado
-      });
-
-      setRegistrationStep("phoneVerification");
-      setSuccess("Verification code sent to your phone");
-    } catch (error) {
-      setError(error.message || "Error sending SMS code");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyPhoneCode = async (phoneNumber, code) => {
-    // Receber tanto o número quanto o código
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await axios.post(`${API_URL}/api/verify-sms`, {
-        phoneNumber, // Usar os parâmetros diretos
-        code,
-      });
-
-      if (response.data.success) {
-        await registerUser();
-      }
-    } catch (error) {
-      setError(error.response?.data?.error || "Invalid phone code");
     } finally {
       setLoading(false);
     }
@@ -313,22 +257,18 @@ const App = () => {
     try {
       setLoading(true);
 
-      // Obter localização do usuário
       const location = await getUserLocation();
 
-      // Primeiro registrar no contrato
       const createResponse = await axios.post(`${API_URL}/api/create-user`, {
         userAddress: userWallet.toLowerCase(),
         sponsorAddress: sponsorAddress.toLowerCase(),
       });
 
       if (createResponse.data.success) {
-        // Depois salvar dados no Supabase
         await axios.post(`${API_URL}/api/register`, {
           userAddress: userWallet.toLowerCase(),
           sponsorAddress: sponsorAddress.toLowerCase(),
           email,
-          phone,
           location: location || {},
         });
 
@@ -336,7 +276,6 @@ const App = () => {
         setIsConnected(true);
         setActivePage("home");
 
-        // Atualizar dados do usuário
         const userData = await checkExistingUser(userWallet);
         if (userData) {
           setUserData(userData);
@@ -349,9 +288,8 @@ const App = () => {
     }
   };
 
-  // Modal para Dispositivos Móveis
   const MobileConnectModal = () => {
-    const { t } = useLanguage(); // Hook para traduções
+    const { t } = useLanguage();
 
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
@@ -402,26 +340,6 @@ const App = () => {
   };
 
   useEffect(() => {
-    const checkLocationPermission = async () => {
-      try {
-        const result = await navigator.permissions.query({
-          name: "geolocation",
-        });
-        setLocationPermission(result.state === "granted");
-
-        result.onchange = () => {
-          setLocationPermission(result.state === "granted");
-        };
-      } catch (error) {
-        console.error("Erro ao verificar permissão de localização:", error);
-        setLocationPermission(false);
-      }
-    };
-
-    checkLocationPermission();
-  }, []);
-
-  useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", (accounts) => {
         if (accounts.length === 0) {
@@ -454,7 +372,6 @@ const App = () => {
             loading={loading}
             success={success}
             error={error}
-            locationPermission={locationPermission}
             initialSponsorAddress={sponsorAddress}
             onSponsorVerify={(address) => {
               setSponsorAddress(address);
@@ -462,22 +379,12 @@ const App = () => {
             }}
             onEmailSend={(newEmail) => {
               setEmail(newEmail);
-              // Passar email diretamente para sendEmailCode para evitar problemas com o estado
               sendEmailCode(newEmail);
             }}
             onEmailVerify={({ email, code }) => {
               setEmail(email);
               setEmailCode(code);
-              verifyEmailCode(email, code);  // <-- Agora passamos os parâmetros
-            }}
-            onPhoneSend={(phoneNumber) => {
-              setPhone(phoneNumber);
-              sendPhoneCode(phoneNumber); // Passar o número direto
-            }}
-            onPhoneVerify={({ phone: phoneNumber, code }) => {
-              setPhone(phoneNumber);
-              setPhoneCode(code);
-              verifyPhoneCode(phoneNumber, code); // Passar ambos os valores direto
+              verifyEmailCode(email, code);
             }}
           />
         )}

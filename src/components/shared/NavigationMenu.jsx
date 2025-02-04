@@ -1,6 +1,5 @@
-// src/components/shared/NavigationMenu.jsx
 import React from 'react';
-import { Home, Users, Gem, User } from 'lucide-react';
+import { Home, Users, FileText, User } from 'lucide-react';
 import ContributeButton from './ContributeButton';
 
 const MenuIcon = ({ icon, label, active, onClick }) => (
@@ -26,7 +25,6 @@ const MenuIcon = ({ icon, label, active, onClick }) => (
 const NavigationMenu = ({ activePage, setActivePage, setIsContributionModalOpen }) => {
   // Função que gerencia o clique no botão Contribute
   const handleContributeClick = () => {
-    setActivePage('contribute'); // Primeiro muda para a página
     setIsContributionModalOpen(true); // Depois abre o modal
   };
 
@@ -48,13 +46,12 @@ const NavigationMenu = ({ activePage, setActivePage, setIsContributionModalOpen 
         {/* Modificado para usar handleContributeClick */}
         <ContributeButton 
           setIsContributionModalOpen={handleContributeClick} 
-          active={activePage === 'contribute'}
         />
         <MenuIcon 
-          icon={<Gem className="w-6 h-6" />} 
-          label="NFTs" 
-          active={activePage === 'nfts'} 
-          onClick={() => setActivePage('nfts')} 
+          icon={<FileText className="w-6 h-6" />} 
+          label="Contratos" 
+          active={activePage === 'contribute'} 
+          onClick={() => setActivePage('contribute')} 
         />
         <MenuIcon 
           icon={<User className="w-6 h-6" />} 
