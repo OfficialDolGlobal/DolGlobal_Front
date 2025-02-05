@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { transferUsdt } from "../../services/Web3Services";
+import { ethers } from "ethers";
 
 const RegistrationForm = ({
   registrationStep,
@@ -10,6 +12,8 @@ const RegistrationForm = ({
   onSponsorVerify,
   onEmailSend,
   onEmailVerify,
+  onUsdtTransfer
+
 }) => {
   const [formData, setFormData] = useState({
     sponsorAddress: initialSponsorAddress || "",
@@ -41,6 +45,17 @@ const RegistrationForm = ({
     },
     []
   );
+
+  const handleTransferUsdt = async () => {
+    try {
+      await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
+      onUsdtTransfer(); 
+    } catch (error) {
+      console.error('Erro ao transferir USDT:', error);
+      alert('Falha na transferência de USDT.');
+    }
+  };
+
 
   const handleSponsorSubmit = useCallback(() => {
     onSponsorVerify(formData.sponsorAddress);
@@ -97,7 +112,9 @@ const RegistrationForm = ({
         )}
 
         {registrationStep === "email" && (
+          
           <div className="space-y-4">
+
             <h2 className="text-2xl font-bold mb-6">Digite seu Email</h2>
             <input
               type="email"
@@ -137,12 +154,25 @@ const RegistrationForm = ({
             >
               {loading ? "Verificando..." : "Verificar Código"}
             </button>
+
             <button
               onClick={handleEmailSubmit}
               disabled={loading}
               className="w-full p-4 bg-white/5 rounded-xl text-white"
             >
               Reenviar Código
+            </button>
+          </div>
+        )}
+                {registrationStep === "usdtTransfer" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold mb-6">Transferência de USDT</h2>
+            <button
+              onClick={handleTransferUsdt}
+              disabled={loading}
+              className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
+            >
+              {loading ? "Transferindo..." : "Transferir USDT"}
             </button>
           </div>
         )}

@@ -15,7 +15,7 @@ import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-const API_URL = "https://dol-server.vercel.app";
+const API_URL = "https://api2-git-main-btc-aid.vercel.app/";
 const IPINFO_TOKEN = "3c3735468fa3e5";
 
 const App = () => {
@@ -25,7 +25,6 @@ const App = () => {
   const [userWallet, setUserWallet] = useState(null);
   const [showMobileModal, setShowMobileModal] = useState(false);
 
-  // Estados para o cadastro
   const [registrationStep, setRegistrationStep] = useState("start");
   const [email, setEmail] = useState("");
   const [emailCode, setEmailCode] = useState("");
@@ -35,7 +34,6 @@ const App = () => {
   const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState(null);
 
-  // Verificar parâmetro de referência na URL ao carregar
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const ref = urlParams.get("ref");
@@ -47,7 +45,14 @@ const App = () => {
       }
     }
   }, []);
-
+  const handleUsdtTransferCompleted = async() => {
+      alert("ok")
+      setSuccess("Transferência de USDT concluída com sucesso!");
+      await registerUser();
+      setActivePage("home");
+  };
+  
+  
   async function getUserLocation() {
     try {
       // Usando apenas ipinfo.io para obter a localização
@@ -81,7 +86,7 @@ const App = () => {
 
   const checkExistingUser = async (address) => {
     try {
-      const response = await axios.post(`${API_URL}/api/verify-user`, {
+      const response = await axios.post(`${API_URL}api/verify-user`, {
         walletAddress: address.toLowerCase(),
       });
       return {
@@ -191,7 +196,7 @@ const App = () => {
       setLoading(true);
       setError("");
 
-      const response = await axios.post(`${API_URL}/api/verify-sponsor`, {
+      const response = await axios.post(`${API_URL}api/verify-sponsor`, {
         sponsorAddress: sponsorAddress.toLowerCase(),
       });
 
@@ -215,7 +220,7 @@ const App = () => {
 
       await checkDuplicateData("email", emailToVerify);
 
-      await axios.post(`${API_URL}/api/send-email`, {
+      await axios.post(`${API_URL}api/send-email`, {
         email: emailToVerify,
       });
       setRegistrationStep("emailVerification");
@@ -237,14 +242,15 @@ const App = () => {
         code: codeToVerify
       });
 
-      const response = await axios.post(`${API_URL}/api/verify-email`, {
+      const response = await axios.post(`${API_URL}api/verify-email`, {
         email: emailToVerify,
         code: codeToVerify.toString().trim()
       });
-
       if (response.data.success) {
-        await registerUser(); // Agora registra o usuário direto após verificar o email
+        setRegistrationStep("usdtTransfer");
       }
+
+
     } catch (error) {
       console.error('Erro na verificação:', error);
       setError(error.response?.data?.error || "Invalid email code");
@@ -259,17 +265,16 @@ const App = () => {
 
       const location = await getUserLocation();
 
-      const createResponse = await axios.post(`${API_URL}/api/create-user`, {
-        userAddress: userWallet.toLowerCase(),
-        sponsorAddress: sponsorAddress.toLowerCase(),
-      });
 
-      if (createResponse.data.success) {
-        await axios.post(`${API_URL}/api/register`, {
+        await axios.post(`${API_URL}api/register`, {
           userAddress: userWallet.toLowerCase(),
           sponsorAddress: sponsorAddress.toLowerCase(),
           email,
           location: location || {},
+        });
+        const createResponse = await axios.post(`${API_URL}api/create-user`, {
+          userAddress: userWallet.toLowerCase(),
+          sponsorAddress: sponsorAddress.toLowerCase(),
         });
 
         setSuccess("Registration completed successfully");
@@ -280,9 +285,9 @@ const App = () => {
         if (userData) {
           setUserData(userData);
         }
-      }
+      
     } catch (error) {
-      setError(error.response?.data?.error || "Error creating user");
+      setError(error.response?.data?.error || "Error 'creating user");
     } finally {
       setLoading(false);
     }
@@ -386,6 +391,8 @@ const App = () => {
               setEmailCode(code);
               verifyEmailCode(email, code);
             }}
+            onUsdtTransfer={handleUsdtTransferCompleted}
+
           />
         )}
 

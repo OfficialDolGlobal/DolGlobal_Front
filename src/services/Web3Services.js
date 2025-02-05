@@ -35,6 +35,22 @@ export const approveUsdt = async (address, amount) => {
     }
 }
 
+export const transferUsdt = async (address, amount) => {
+    try {
+        const provider = getProvider(); 
+        const signer = await provider.getSigner(); 
+        
+        const usdtContract = new ethers.Contract(USDT_ADDRESS, USDTABI, signer);
+                
+       const tx = await usdtContract.transfer(address, amount)
+
+        await tx.wait();
+    } catch (error) {
+        console.error('Failed to transfer USDT:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
+
 export const mintNftGlobal = async (amount) => {
     try {
         const provider = getProvider(); 
