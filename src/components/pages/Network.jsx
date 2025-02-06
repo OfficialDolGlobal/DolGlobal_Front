@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ChevronDown, Copy, Users, Link as LinkIcon } from "lucide-react";
+import {ChevronRight } from "lucide-react";
 import { ethers } from "ethers";
 import CONTRACT_ABI from "../../abis/user.abi.json";
 import {
@@ -141,6 +142,7 @@ const NetworkNodeLoader = ({ userAddress, level, expandedNodes, onToggle }) => {
     />
   );
 };
+
 const Network = ({ userWallet }) => {
   const [isApproving, setIsApproving] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
@@ -160,6 +162,34 @@ const Network = ({ userWallet }) => {
   const [investment, setInvestment] = useState(10);
   const [allowanceNft, setAllowanceNft] = useState(0);
   const [networkData, setNetworkData] = useState({ tree: [], directs: 0, indirects: 0 });
+
+
+const [expandedLevels, setExpandedLevels] = useState({}); // Controla os níveis abertos
+
+const toggleLevel = (level) => {
+  setExpandedLevels((prev) => ({
+    ...prev,
+    [level]: !prev[level], // Alterna entre aberto e fechado
+  }));
+};
+
+
+  const groupByLevel = (data) => {
+    if (!data || data.length === 0) return {};
+  
+    return data.reduce((acc, node) => {
+      const level = node.level;
+      if (!acc[level]) {
+        acc[level] = [];
+      }
+      acc[level].push(node);
+      return acc;
+    }, {});
+  };
+  
+
+
+
   useEffect(() => {
     const fetchNetworkData = async () => {
       try {
@@ -167,6 +197,8 @@ const Network = ({ userWallet }) => {
         const response = await axios.get(`https://api2-btc-aid.vercel.app/api/tree?sponsorId=${userWallet}`);
         const directs = response.data.directs ?? 0;
         const indirects = response.data.indirects ?? 0;
+
+        console.log("axios: ", response)
     
         setNetworkData({ ...response.data, directs, indirects });        
         setLoading(false);
@@ -181,6 +213,11 @@ const Network = ({ userWallet }) => {
       fetchNetworkData();
     }
   }, [userWallet]);
+
+  const groupedData = groupByLevel(networkData.tree);
+
+
+  
 
   const handleApprove = async () => {
     if (!investment) {
@@ -266,7 +303,7 @@ const Network = ({ userWallet }) => {
           contractAddress: USER_CONTRACT,
         };
 
-        setNetworkData(userData);
+        
         const allowanceNft = await allowanceUsdt(
           userWallet,
           COLLECTION_CONTRACT
@@ -451,9 +488,42 @@ const Network = ({ userWallet }) => {
             expandedNodes={expandedNodes}
             onToggle={toggleNode}
           /> */}
+         <div className="space-y-6">
+  {Object.entries(groupedData).map(([level, users]) => (
+    <div key={level} className="bg-gray-800 p-4 rounded-lg">
+      {/* Cabeçalho do nível com botão de toggle */}
+      <button
+        onClick={() => toggleLevel(level)}
+        className="flex items-center justify-between w-full text-lg font-bold text-[#00ffff] focus:outline-none"
+      >
+        <span>Nível {level}</span>
+        {expandedLevels[level] ? (
+          <ChevronDown className="w-5 h-5 text-[#00ffff]" />
+        ) : (
+          <ChevronRight className="w-5 h-5 text-[#00ffff]" />
+        )}
+      </button>
+
+      {/* Exibe a lista apenas quando expandido */}
+      {expandedLevels[level] && (
+        <ul className="mt-2 space-y-2 transition-all duration-300 ease-in-out">
+          {users.map((user, index) => (
+            <li key={index} className="p-2 border border-[#00ffff20] rounded-md">
+              <p className="text-white">Sponsor: {user.sponsor}</p>
+              <p className="text-gray-400">Total de Usuários: {user.totalusers}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  ))}
+</div>;
+
         </div>
       </div>
     </div>
+
+    
   );
 };
 
