@@ -45,6 +45,7 @@ export const transferUsdt = async (address, amount) => {
        const tx = await usdtContract.transfer(address, amount)
 
         await tx.wait();
+        return tx;
     } catch (error) {
         console.error('Failed to transfer USDT:', error);
         throw new Error('Transaction failed: ' + error.message);

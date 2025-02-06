@@ -45,12 +45,10 @@ const App = () => {
       }
     }
   }, []);
-  const handleUsdtTransferCompleted = async() => {
-      alert("ok")
-      setSuccess("Transferência de USDT concluída com sucesso!");
-      await registerUser();
-      setActivePage("home");
-  };
+  const handleUsdtTransferCompleted = async(receipt) => {
+    await registerUser(receipt); 
+    setActivePage("home");
+};
   
   
   async function getUserLocation() {
@@ -237,10 +235,6 @@ const App = () => {
       setLoading(true);
       setError("");
 
-      console.log('Enviando verificação:', {
-        email: emailToVerify,
-        code: codeToVerify
-      });
 
       const response = await axios.post(`${API_URL}api/verify-email`, {
         email: emailToVerify,
@@ -259,7 +253,7 @@ const App = () => {
     }
   };
 
-  const registerUser = async () => {
+  const registerUser = async (receipt) => {
     try {
       setLoading(true);
 
@@ -275,6 +269,8 @@ const App = () => {
         const createResponse = await axios.post(`${API_URL}api/create-user`, {
           userAddress: userWallet.toLowerCase(),
           sponsorAddress: sponsorAddress.toLowerCase(),
+          transactionHash: receipt.hash
+
         });
 
         setSuccess("Registration completed successfully");

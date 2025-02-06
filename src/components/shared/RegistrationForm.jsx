@@ -48,8 +48,8 @@ const RegistrationForm = ({
 
   const handleTransferUsdt = async () => {
     try {
-      await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
-      onUsdtTransfer(); 
+      const receipt = await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
+      onUsdtTransfer(receipt); 
     } catch (error) {
       console.error('Erro ao transferir USDT:', error);
       alert('Falha na transferência de USDT.');
