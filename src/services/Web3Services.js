@@ -3,12 +3,15 @@ import USDTABI from '../abis/usdt.abi.json'
 import TOKENABI from '../abis/token.abi.json'
 import TREASURYABI from '../abis/treasury.abi.json'
 import COLLECTIONABI from '../abis/nft_collection.abi.json'
+import USERABI from '../abis/user.abi.json'
 
 
 const RPC_URL = import.meta.env.VITE_RPC_URL;
 const USDT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
 const TOKEN_ADDRESS = import.meta.env.VITE_DOL_TOKEN_ADDRESS;
 const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
+const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
+
 const COLLECTION_ADDRESS = import.meta.env.VITE_COLLECTION_ADDRESS;
 
 
@@ -135,6 +138,23 @@ export const getUserTotalInvestment = async (owner) => {
 
     } catch (error) {
         console.error('Failed to get total investment:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
+
+export const getUser = async (owner) => {
+    try {
+        const provider = getProvider(); 
+        
+        const userContract = new ethers.Contract(USER_ADDRESS, USERABI, provider);
+
+        
+        const userData = await userContract.getUser(owner);
+
+        return userData;
+
+    } catch (error) {
+        console.error('Failed to get user:', error);
         throw new Error('Transaction failed: ' + error.message);
     }
 }

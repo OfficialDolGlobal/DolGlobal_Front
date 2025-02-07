@@ -12,13 +12,21 @@ const RegistrationForm = ({
   onSponsorVerify,
   onEmailSend,
   onEmailVerify,
-  onUsdtTransfer
+  onPhoneVerify,
+  onPhoneSend,
+  onUsdtTransfer,
+  phone,
+  email,
+  onEmailSendCode,
+  onPhoneSendCode
 
 }) => {
   const [formData, setFormData] = useState({
     sponsorAddress: initialSponsorAddress || "",
-    email: "",
+    email: email||"",
+    phone: phone ||"",
     emailCode: "",
+    phoneCode:""
   });
 
   useEffect(() => {
@@ -64,6 +72,14 @@ const RegistrationForm = ({
   const handleEmailSubmit = useCallback(() => {
     onEmailSend(formData.email);
   }, [formData.email, onEmailSend]);
+  const handleEmailSendCode = useCallback(() => {
+    
+    onEmailSendCode(formData.email);
+  }, [formData.email, onEmailSendCode]);
+
+  const handlePhoneSubmit = useCallback(() => {
+    onPhoneSend(formData.phone);
+  }, [formData.phone, onPhoneSend]);
 
   const handleEmailVerify = useCallback(() => {
     onEmailVerify({
@@ -71,6 +87,15 @@ const RegistrationForm = ({
       code: formData.emailCode,
     });
   }, [formData.email, formData.emailCode, onEmailVerify]);
+  const handlePhoneVerify = useCallback(() => {
+    onPhoneVerify({
+      phone: formData.phone,
+      code: formData.phoneCode,
+    });
+  }, [formData.phone, formData.phoneCode, onPhoneVerify]);
+  const handlePhoneSendCode = useCallback(() => {
+    onPhoneSendCode(formData.phone);
+  }, [formData.phone, onPhoneSendCode]);
 
   return (
     <div className="min-h-screen bg-[#000c2a] text-white flex items-center justify-center p-4">
@@ -128,42 +153,101 @@ const RegistrationForm = ({
               disabled={loading || !formData.email}
               className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
             >
-              {loading ? "Enviando..." : "Enviar Código de Verificação"}
+              {loading ? "Cadastrando..." : "Cadastrar email"}
             </button>
           </div>
         )}
-
-        {registrationStep === "emailVerification" && (
+        {registrationStep === "phone" && (
+          
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold mb-6">Verificar Email</h2>
-            <p className="text-gray-300 mb-4">
-              Enviamos um código para: {formData.email}
-            </p>
+
+            <h2 className="text-2xl font-bold mb-6">Digite seu Telefone</h2>
             <input
               type="text"
-              value={formData.emailCode}
-              onChange={handleInputChange("emailCode")}
-              placeholder="Digite o código de verificação"
+              value={formData.phone}
+              onChange={handleInputChange("phone")}
+              placeholder="Seu telefone"
               className="w-full p-4 bg-white/5 rounded-xl border border-white/10 text-white placeholder-white/50"
-              maxLength={6}
             />
             <button
-              onClick={handleEmailVerify}
-              disabled={loading || !formData.emailCode}
+              onClick={handlePhoneSubmit}
+              disabled={loading || !formData.phone}
               className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
             >
-              {loading ? "Verificando..." : "Verificar Código"}
-            </button>
-
-            <button
-              onClick={handleEmailSubmit}
-              disabled={loading}
-              className="w-full p-4 bg-white/5 rounded-xl text-white"
-            >
-              Reenviar Código
+              {loading ? "Cadastrando..." : "Cadastrar telefone"}
             </button>
           </div>
         )}
+{registrationStep === "verifyCode" && (
+  <>
+
+    {email ? (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold mb-6">Verificar Email</h2>
+        <p className="text-gray-300 mb-4">
+          Enviamos um código para: {formData.email}
+        </p>
+        <input
+          type="text"
+          value={formData.emailCode}
+          onChange={handleInputChange("emailCode")}
+          placeholder="Digite o código de verificação"
+          className="w-full p-4 bg-white/5 rounded-xl border border-white/10 text-white placeholder-white/50"
+          maxLength={6}
+        />
+        <button
+          onClick={handleEmailVerify}
+          disabled={loading || !formData.emailCode}
+          className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
+        >
+          {loading ? "Verificando..." : "Verificar Código"}
+        </button>
+
+        <button
+          onClick={handleEmailSendCode}
+          disabled={loading}
+          className="w-full p-4 bg-white/5 rounded-xl text-white"
+        >
+          Reenviar Código
+        </button>
+      </div>
+    ):"Email already verified"}
+
+    {phone ? (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold mb-6">Verificar Telefone</h2>
+        <p className="text-gray-300 mb-4">
+          Enviamos um código para: {formData.phone}
+        </p>
+        <input
+          type="text"
+          value={formData.phoneCode}
+          onChange={handleInputChange("phoneCode")}
+          placeholder="Digite o código de verificação"
+          className="w-full p-4 bg-white/5 rounded-xl border border-white/10 text-white placeholder-white/50"
+          maxLength={6}
+        />
+         <button
+          onClick={handlePhoneVerify}
+          disabled={loading || !formData.phoneCode}
+          className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
+        >
+          {loading ? "Verificando..." : "Verificar Código"}
+        </button>
+
+        <button
+          onClick={handlePhoneSendCode}
+          disabled={loading}
+          className="w-full p-4 bg-white/5 rounded-xl text-white"
+        >
+          Reenviar Código
+        </button> 
+      </div>
+    ):"Phone already verified"}
+  </>
+)}
+
+
                 {registrationStep === "usdtTransfer" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-6">Transferência de USDT</h2>

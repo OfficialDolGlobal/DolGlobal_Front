@@ -10,12 +10,12 @@ import NavigationMenu from "./components/shared/NavigationMenu";
 import ContributionModal from "./components/modals/ContributionModal";
 import { LanguageManager } from "./components/LanguageManager";
 import { translations } from "./translations";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
+import { getUser } from "./services/Web3Services";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-const API_URL = "https://api2-git-main-btc-aid.vercel.app/";
+const API_URL = "https://api2-btc-aid.vercel.app/";
 const IPINFO_TOKEN = "3c3735468fa3e5";
 
 const App = () => {
@@ -27,7 +27,8 @@ const App = () => {
 
   const [registrationStep, setRegistrationStep] = useState("start");
   const [email, setEmail] = useState("");
-  const [emailCode, setEmailCode] = useState("");
+  const [phone, setPhone] = useState("");
+
   const [sponsorAddress, setSponsorAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -47,7 +48,7 @@ const App = () => {
   }, []);
   const handleUsdtTransferCompleted = async(receipt) => {
     await registerUser(receipt); 
-    setActivePage("home");
+    setRegistrationStep("verifyCode");
 };
   
   
@@ -82,41 +83,8 @@ const App = () => {
     }
   }
 
-  const checkExistingUser = async (address) => {
-    try {
-      const response = await axios.post(`${API_URL}api/verify-user`, {
-        walletAddress: address.toLowerCase(),
-      });
-      return {
-        exists: response.data.exists,
-        faceId: response.data.faceId,
-        userData: response.data.userData,
-      };
-    } catch (error) {
-      console.error("Error checking user:", error);
-      return null;
-    }
-  };
 
-  const checkDuplicateData = async (type, value) => {
-    try {
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select()
-        .eq(type, value)
-        .single();
 
-      if (existingUser) {
-        throw new Error(`This ${type} is already registered`);
-      }
-      return false;
-    } catch (error) {
-      if (error.message.includes("already registered")) {
-        throw error;
-      }
-      return false;
-    }
-  };
 
   const handleConnect = async () => {
     try {
@@ -128,20 +96,19 @@ const App = () => {
             const accounts = await window.ethereum.request({
               method: "eth_requestAccounts",
             });
-
             if (accounts[0]) {
               const address = accounts[0].toLowerCase();
               setUserWallet(address);
-
-              const existingUser = await checkExistingUser(address);
-              if (existingUser?.exists) {
-                setUserData({
-                  ...existingUser,
-                  isVerified: existingUser.faceId,
-                });
+              const userData = await getUser(address)
+              
+              if (userData[0]) {
+                setUserData(
+                  userData
+                );
                 setIsConnected(true);
                 setActivePage("home");
               } else {
+
                 setRegistrationStep("sponsor");
               }
             }
@@ -161,14 +128,35 @@ const App = () => {
           if (accounts[0]) {
             const address = accounts[0];
             setUserWallet(address);
+            
+            const userData = await getUser(address)
 
-            const existingUser = await checkExistingUser(address);
-            if (existingUser?.exists) {
-              setUserData(existingUser);
+            if (userData[0]) {
+              setUserData(userData);
               setIsConnected(true);
               setActivePage("home");
             } else {
-              setRegistrationStep("sponsor");
+              try {
+                const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+
+                if(!response.data.phone_verified || !response.data.email_verified){
+                  setRegistrationStep("verifyCode");
+                  if(!response.data.email_verified){
+                    setEmail(response.data.email)
+                  }
+                  if(!response.data.phone_verified){
+                    setPhone(response.data.phone)
+                  }
+                }else{
+                  setUserData(userData);
+                  setIsConnected(true);
+                  setActivePage("home");                  
+                }
+              } catch (error) {
+                
+                setRegistrationStep("sponsor");
+              }
+
             }
           }
         } else {
@@ -191,14 +179,12 @@ const App = () => {
 
   const verifySponsor = async () => {
     try {
+      
       setLoading(true);
       setError("");
-
-      const response = await axios.post(`${API_URL}api/verify-sponsor`, {
-        sponsorAddress: sponsorAddress.toLowerCase(),
-      });
-
-      if (response.data.valid) {
+      const sponsorData = await getUser(sponsorAddress)      
+      
+      if (sponsorData[0]) {
         setRegistrationStep("email");
         setSuccess("Sponsor verified successfully");
       } else {
@@ -216,15 +202,28 @@ const App = () => {
       setLoading(true);
       setError("");
 
-      await checkDuplicateData("email", emailToVerify);
-
       await axios.post(`${API_URL}api/send-email`, {
         email: emailToVerify,
       });
-      setRegistrationStep("emailVerification");
-      setSuccess("Verification code sent to your email");
     } catch (error) {
       setError(error.message || "Error sending email code");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const sendPhoneCode = async (phoneToVerify) => {
+    try {
+      setLoading(true);
+      setError("");
+
+
+      await axios.post(`${API_URL}api/send-sms`, {
+        phoneNumber: phoneToVerify,
+      });
+      setSuccess("Verification code sent to your phone");
+    } catch (error) {
+      setError(error.message || "Error sending phone code");
     } finally {
       setLoading(false);
     }
@@ -241,13 +240,48 @@ const App = () => {
         code: codeToVerify.toString().trim()
       });
       if (response.data.success) {
-        setRegistrationStep("usdtTransfer");
+        setEmail("")
+        const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+
+        if(response.data.phone_verified && response.data.email_verified){
+          setIsConnected(true);
+          setActivePage("home");
+        }
       }
 
 
     } catch (error) {
       console.error('Erro na verificação:', error);
       setError(error.response?.data?.error || "Invalid email code");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const verifyPhoneCode = async (phoneToVerify, codeToVerify) => {
+    try {
+      setLoading(true);
+      setError("");
+
+
+      const response = await axios.post(`${API_URL}api/verify-sms`, {
+        phoneNumber: phoneToVerify,
+        code: codeToVerify.toString().trim()
+      });
+
+      if (response.data.success) {
+        setPhone("")
+        const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+
+        if(response.data.phone_verified && response.data.email_verified){
+          setIsConnected(true);
+          setActivePage("home");
+        }
+      }
+
+
+    } catch (error) {
+      console.error('Erro na verificação:', error);
+      setError(error.response?.data?.error || "Invalid phone code");
     } finally {
       setLoading(false);
     }
@@ -260,27 +294,21 @@ const App = () => {
       const location = await getUserLocation();
 
 
-        await axios.post(`${API_URL}api/register`, {
-          userAddress: userWallet.toLowerCase(),
-          sponsorAddress: sponsorAddress.toLowerCase(),
-          email,
-          location: location || {},
-        });
+
         const createResponse = await axios.post(`${API_URL}api/create-user`, {
           userAddress: userWallet.toLowerCase(),
           sponsorAddress: sponsorAddress.toLowerCase(),
-          transactionHash: receipt.hash
+          transactionHash: receipt.hash,
+          email,
+          phone,
+          location: location || {}
 
         });
 
         setSuccess("Registration completed successfully");
-        setIsConnected(true);
-        setActivePage("home");
 
-        const userData = await checkExistingUser(userWallet);
-        if (userData) {
-          setUserData(userData);
-        }
+
+
       
     } catch (error) {
       setError(error.response?.data?.error || "Error 'creating user");
@@ -373,6 +401,8 @@ const App = () => {
             loading={loading}
             success={success}
             error={error}
+            phone={phone}
+            email={email}
             initialSponsorAddress={sponsorAddress}
             onSponsorVerify={(address) => {
               setSponsorAddress(address);
@@ -380,12 +410,25 @@ const App = () => {
             }}
             onEmailSend={(newEmail) => {
               setEmail(newEmail);
-              sendEmailCode(newEmail);
+              setRegistrationStep("phone");
+            }}
+            onPhoneSend={(newPhone)=>{
+              setPhone(newPhone);
+              setRegistrationStep("usdtTransfer")
             }}
             onEmailVerify={({ email, code }) => {
               setEmail(email);
-              setEmailCode(code);
               verifyEmailCode(email, code);
+            }}
+            onPhoneVerify={({ phone, code }) => {
+              setPhone(phone);
+              verifyPhoneCode(phone, code);
+            }}
+            onEmailSendCode={(email)=>{
+              sendEmailCode(email)
+            }}
+            onPhoneSendCode={(phone)=>{
+              sendPhoneCode(phone)
             }}
             onUsdtTransfer={handleUsdtTransferCompleted}
 

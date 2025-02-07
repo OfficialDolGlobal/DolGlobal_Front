@@ -164,12 +164,12 @@ const Network = ({ userWallet }) => {
   const [networkData, setNetworkData] = useState({ tree: [], directs: 0, indirects: 0 });
 
 
-const [expandedLevels, setExpandedLevels] = useState({}); // Controla os níveis abertos
+const [expandedLevels, setExpandedLevels] = useState({}); 
 
 const toggleLevel = (level) => {
   setExpandedLevels((prev) => ({
     ...prev,
-    [level]: !prev[level], // Alterna entre aberto e fechado
+    [level]: !prev[level], 
   }));
 };
 
@@ -194,11 +194,10 @@ const toggleLevel = (level) => {
     const fetchNetworkData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://api2-btc-aid.vercel.app/api/tree?sponsorId=${userWallet}`);
+        const response = await axios.get(`https://api2-btc-aid.vercel.app/api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
         const directs = response.data.directs ?? 0;
         const indirects = response.data.indirects ?? 0;
 
-        console.log("axios: ", response)
     
         setNetworkData({ ...response.data, directs, indirects });        
         setLoading(false);
