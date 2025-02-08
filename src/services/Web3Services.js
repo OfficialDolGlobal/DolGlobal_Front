@@ -4,6 +4,8 @@ import TOKENABI from '../abis/token.abi.json'
 import TREASURYABI from '../abis/treasury.abi.json'
 import COLLECTIONABI from '../abis/nft_collection.abi.json'
 import USERABI from '../abis/user.abi.json'
+import axios from "axios";
+
 
 
 const RPC_URL = import.meta.env.VITE_RPC_URL;
@@ -11,6 +13,7 @@ const USDT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
 const TOKEN_ADDRESS = import.meta.env.VITE_DOL_TOKEN_ADDRESS;
 const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
 const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
+const API_URL = "https://api2-btc-aid.vercel.app/";
 
 const COLLECTION_ADDRESS = import.meta.env.VITE_COLLECTION_ADDRESS;
 
@@ -19,7 +22,70 @@ export const getProvider = () => {
     if (!window.ethereum) throw new Error("No MetaMask found");
     return new ethers.BrowserProvider(window.ethereum);
 };
+export const checkEmail = async (email) => {
+    try {
+        const response = await axios.get(`${API_URL}api/check-email`, {
+            params: { email }
+        });
+        return response.data.emailExists; 
+    } catch (error) {
+        console.error('Error checking email:', error);
+        throw error; 
+    }
+}
+export const getSignature = async () => {
+    try {
+        const provider = getProvider();
+        const signer = await provider.getSigner();
+        const message = "Dol Global - The most innovative crypto DAO!";
+        const signature = await signer.signMessage(message);
+        return signature;
+    } catch (error) {
+        console.error("Error while signing the message:", error);
+        throw new Error("Failed to sign the message. Please check your wallet connection.");
+    }
+};
 
+export const checkBlacklist = async (user_address, cookie_value,signature) => {
+    try {
+        const response = await axios.post(`${API_URL}api/check-cookie`, {
+            user_address,
+            cookie_value,
+            signature
+        });
+        return response.data; 
+    } catch (error) {
+        if (error.response) {
+            console.error("Error status:", error.response.status);
+            console.error("Error data:", error.response.data);
+        } else if (error.request) {
+            console.error("No response received");
+        } else {
+            console.error("Error setting up request:", error.message);
+        }
+        throw error; 
+    }
+};
+export const checkPhone = async (phone) => {
+    try {
+        const response = await axios.get(`${API_URL}api/check-phone`, {
+            params: { phone }
+        });
+        return response.data.phoneExists; 
+    } catch (error) {
+        console.error('Error checking phone:', error);
+        throw error; 
+    }
+}
+export const getUserIp = async () => {
+    try {
+        const response = await axios.get('https://api.ipify.org?format=json');
+        return response.data.ip;
+    } catch (error) {
+        console.error('Erro to get IP:', error);
+        return null; 
+    }
+}
 export const approveUsdt = async (address, amount) => {
     try {
         const provider = getProvider(); 
@@ -90,7 +156,22 @@ export const allowanceUsdt = async (owner, spender) => {
         throw new Error('Transaction failed: ' + error.message);
     }
 }
+export const balanceUsdt = async (owner) => {
+    try {
+        const provider = getProvider(); 
+        
+        const usdtContract = new ethers.Contract(USDT_ADDRESS, USDTABI, provider);
+        
+        
+        const balanceValue = await usdtContract.balanceOf(owner);
 
+        return balanceValue;
+
+    } catch (error) {
+        console.error('Failed to get balance USDT:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
 export const contractClaim = async (index) => {
     try {
         const provider = getProvider(); 
@@ -150,7 +231,7 @@ export const getUser = async (owner) => {
 
         
         const userData = await userContract.getUser(owner);
-
+        
         return userData;
 
     } catch (error) {

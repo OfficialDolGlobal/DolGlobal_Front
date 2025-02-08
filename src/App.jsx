@@ -12,7 +12,8 @@ import { LanguageManager } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
-import { getUser } from "./services/Web3Services";
+import { checkEmail, checkPhone, getUser, transferUsdt } from "./services/Web3Services";
+import { ethers } from "ethers";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = "https://api2-btc-aid.vercel.app/";
@@ -31,25 +32,32 @@ const App = () => {
 
   const [sponsorAddress, setSponsorAddress] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [emailLoadingVerify, setEmailLoadingVerify] = useState(false);
+  const [phoneLoadingVerify, setPhoneLoadingVerify] = useState(false);
+
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get("ref");
-    if (ref && ref.length === 42 && ref.startsWith("0x")) {
-      const address = ref.toLowerCase();
-      setSponsorAddress(address);
-      if (registrationStep === "sponsor") {
-        verifySponsor();
+    const fetchInitialData = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ref = urlParams.get("ref");
+      if (ref && ref.length === 42 && ref.startsWith("0x")) {
+        const address = ref.toLowerCase();
+        
+        if (registrationStep === "sponsor") {
+          await verifySponsor(address);
+        }
       }
-    }
-  }, []);
-  const handleUsdtTransferCompleted = async(receipt) => {
-    await registerUser(receipt); 
-    setRegistrationStep("verifyCode");
-};
+    };
+  
+    fetchInitialData(); // Chamada imediata da função assíncrona interna
+  }, [registrationStep]); // Não se esqueça de listar as dependências corretamente, aqui coloquei registrationStep como exemplo.
+  
   
   
   async function getUserLocation() {
@@ -177,45 +185,110 @@ const App = () => {
     setUserData(null);
   };
 
-  const verifySponsor = async () => {
+  const verifySponsor = async (sponsor) => {
+    setSponsorAddress(sponsor);
+    
     try {
-      
       setLoading(true);
-      setError("");
-      const sponsorData = await getUser(sponsorAddress)      
-      
+      setError(""); 
+      let sponsorData;
+      try {
+        sponsorData = await getUser(sponsor);
+      } catch (error) {
+        setRegistrationStep("sponsor"); 
+        setSponsorAddress(false)
+        throw new Error("Invalid sponsor address"); 
+      }
+  
       if (sponsorData[0]) {
-        setRegistrationStep("email");
         setSuccess("Sponsor verified successfully");
+        setRegistrationStep("email");
       } else {
-        setError("Invalid sponsor address");
+        setRegistrationStep("sponsor"); 
+        setSponsorAddress(false)
+        throw new Error("Invalid sponsor address"); 
+        
       }
     } catch (error) {
-      setError(error.response?.data?.error || "Error verifying sponsor");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendEmailCode = async (emailToVerify) => {
-    try {
-      setLoading(true);
-      setError("");
-
-      await axios.post(`${API_URL}api/send-email`, {
-        email: emailToVerify,
-      });
-    } catch (error) {
-      setError(error.message || "Error sending email code");
+      setError(error.message || "Error verifying sponsor");
     } finally {
       setLoading(false);
     }
   };
   
+  const verifyEmail = async (email) => {
+    setEmail(email);
+    try {
+      setSuccess("")
+      setLoading(true);
+      setError(""); 
+      const emailExist = await checkEmail(email)
+      if(emailExist){
+        setEmail(false)
+        throw new Error("Email address already exist"); 
+      }else{
+        setSuccess("Email successfully verified and set");
+        setRegistrationStep("phone"); 
+      }
+  
+
+    } catch (error) {
+      setError(error.response.data.error || "Error verifying email");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const verifyPhone = async (phone) => {
+    setPhone(phone);
+    try {
+      setSuccess("")
+      setLoading(true);
+      setError(""); 
+      const phoneExist = await checkPhone(phone)
+      if(phoneExist){
+        setPhone(false)
+        setError("Phone number already exist")
+        throw new Error("Phone number already exist"); 
+      }else{
+        setSuccess("Phone successfully verified and set");
+
+        setRegistrationStep("usdtTransfer"); 
+      }
+  
+
+    } catch (error) {
+      setError(error.response.data.error || "Error verifying phone");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+
+  const sendEmailCode = async (emailToVerify) => {
+    try {
+      setEmailLoading(true);
+      setError("");
+      setSuccess("");
+
+
+      await axios.post(`${API_URL}api/send-email`, {
+        email: emailToVerify,
+      });
+      setSuccess("Verification code sent to your email");
+
+    } catch (error) {
+      setError(error.message || "Error sending email code");
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+  
   const sendPhoneCode = async (phoneToVerify) => {
     try {
-      setLoading(true);
+      setPhoneLoading(true);
       setError("");
+      setSuccess("");
+
 
 
       await axios.post(`${API_URL}api/send-sms`, {
@@ -225,13 +298,13 @@ const App = () => {
     } catch (error) {
       setError(error.message || "Error sending phone code");
     } finally {
-      setLoading(false);
+      setPhoneLoading(false);
     }
   };
 
   const verifyEmailCode = async (emailToVerify, codeToVerify) => {
     try {
-      setLoading(true);
+      setEmailLoadingVerify(true);
       setError("");
 
 
@@ -254,12 +327,12 @@ const App = () => {
       console.error('Erro na verificação:', error);
       setError(error.response?.data?.error || "Invalid email code");
     } finally {
-      setLoading(false);
+      setEmailLoadingVerify(false);
     }
   };
   const verifyPhoneCode = async (phoneToVerify, codeToVerify) => {
     try {
-      setLoading(true);
+      setPhoneLoadingVerify(true);
       setError("");
 
 
@@ -283,17 +356,18 @@ const App = () => {
       console.error('Erro na verificação:', error);
       setError(error.response?.data?.error || "Invalid phone code");
     } finally {
-      setLoading(false);
+      setPhoneLoadingVerify(false);
     }
   };
 
-  const registerUser = async (receipt) => {
+  const registerUser = async () => {
     try {
       setLoading(true);
+      setSuccess("")
+      setError("")
 
       const location = await getUserLocation();
-
-
+      const receipt = await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
 
         const createResponse = await axios.post(`${API_URL}api/create-user`, {
           userAddress: userWallet.toLowerCase(),
@@ -305,13 +379,18 @@ const App = () => {
 
         });
 
-        setSuccess("Registration completed successfully");
+        setSuccess("Registration completed successfully");        
+        setRegistrationStep("verifyCode");
 
+        
+        
 
 
       
     } catch (error) {
-      setError(error.response?.data?.error || "Error 'creating user");
+      console.log(error);
+      
+      setError(error.response?.data?.error || "Error creating user");
     } finally {
       setLoading(false);
     }
@@ -397,6 +476,11 @@ const App = () => {
 
         {!isConnected && registrationStep !== "start" && (
           <RegistrationForm
+          emailLoading={emailLoading}
+          phoneLoading={phoneLoading}
+          emailLoadingVerify={emailLoadingVerify}
+          phoneLoadingVerify={phoneLoadingVerify}
+          userAddress={userWallet}
             registrationStep={registrationStep}
             loading={loading}
             success={success}
@@ -404,17 +488,14 @@ const App = () => {
             phone={phone}
             email={email}
             initialSponsorAddress={sponsorAddress}
-            onSponsorVerify={(address) => {
-              setSponsorAddress(address);
-              verifySponsor();
+            onSponsorVerify={async(address) => {
+              await verifySponsor(address);
             }}
-            onEmailSend={(newEmail) => {
-              setEmail(newEmail);
-              setRegistrationStep("phone");
+            onEmailSend={async (newEmail) => {
+              verifyEmail(newEmail)
             }}
-            onPhoneSend={(newPhone)=>{
-              setPhone(newPhone);
-              setRegistrationStep("usdtTransfer")
+            onPhoneSend={async(newPhone)=>{
+              verifyPhone(newPhone)
             }}
             onEmailVerify={({ email, code }) => {
               setEmail(email);
@@ -430,7 +511,9 @@ const App = () => {
             onPhoneSendCode={(phone)=>{
               sendPhoneCode(phone)
             }}
-            onUsdtTransfer={handleUsdtTransferCompleted}
+            onUsdtTransfer={async()=>{
+              
+              await registerUser()}}
 
           />
         )}

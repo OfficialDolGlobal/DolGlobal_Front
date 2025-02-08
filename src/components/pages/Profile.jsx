@@ -1,6 +1,5 @@
 import React from "react";
 import { LogOut, Wallet, CircleDot, ExternalLink } from "lucide-react";
-import VerificationSection from "./VerificationSection";
 
 const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
   const truncateAddress = (address) => {
@@ -97,8 +96,6 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
               </div>
             </div>
 
-            {/* Seção de Verificação */}
-            <VerificationSection userWallet={userWallet} />
 
             {/* Botão de Logout */}
             <button

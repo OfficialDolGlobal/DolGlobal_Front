@@ -10,7 +10,15 @@ import {
   getTimeUntilClaim,
   previewValueToClaim,
   contractClaim,
+  checkBlacklist,
+  getUserIp,
+  getSignature,
 } from "../../services/Web3Services";
+import Cookies from 'js-cookie';
+import { isMobile, browserName, deviceType, osName, mobileModel } from 'react-device-detect';
+
+
+
 
 const StatCard = ({ title, value, icon }) => (
   <div className="bg-gradient-to-br from-[#001242]/90 to-[#001242]/70 p-5 rounded-xl border border-[#00ffff20] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]">
@@ -25,10 +33,8 @@ const StatCard = ({ title, value, icon }) => (
 );
 
 const CountdownDisplay = ({ seconds }) => {
-  // Função para formatar o tempo com dois dígitos
   const formatTime = (time) => String(time).padStart(2, "0");
 
-  // Validação da prop `seconds`
   if (typeof seconds !== "number" || seconds < 0 || !Number.isFinite(seconds)) {
     return (
       <div className="text-red-500 text-center font-semibold my-4">
@@ -37,12 +43,10 @@ const CountdownDisplay = ({ seconds }) => {
     );
   }
 
-  // Cálculo das horas, minutos e segundos
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
 
-  // Componente para exibir cada unidade de tempo
   const TimeBox = ({ value, label }) => (
     <div className="flex flex-col items-center">
       <div className="bg-[#001242] w-16 h-16 sm:w-20 sm:h-20 rounded-lg flex items-center justify-center border border-[#00ffff30]">
@@ -67,7 +71,6 @@ const CountdownDisplay = ({ seconds }) => {
 
 const Home = ({ contractAddress, userData, setActivePage }) => {
   const showNotification = useNotification();
-  const [networkStats, setNetworkStats] = useState({ direct: 0, indirect: 0 });
   const [contractStats, setContractStats] = useState({
     userAddress: "",
     totalInvestment: "0",
@@ -112,39 +115,7 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
     return () => clearInterval(interval);
   }, [seconds]);
 
-  const calculateNetworkSize = async (
-    userAddress,
-    contract,
-    visited = new Set()
-  ) => {
-    if (visited.has(userAddress)) return { direct: 0, indirect: 0 };
-    visited.add(userAddress);
 
-    try {
-      const userStruct = await contract.getUser(userAddress);
-      const referrals = userStruct.referrals || [];
-      let indirect = 0;
-
-      for (const referral of referrals) {
-        if (!visited.has(referral)) {
-          const subNetwork = await calculateNetworkSize(
-            referral,
-            contract,
-            visited
-          );
-          indirect += subNetwork.direct + subNetwork.indirect;
-        }
-      }
-
-      return {
-        direct: referrals.length,
-        indirect: indirect,
-      };
-    } catch (error) {
-      console.error("Erro ao calcular tamanho da rede:", error);
-      return { direct: 0, indirect: 0 };
-    }
-  };
   const handleClaim = async (index) => {
     try {
       await contractClaim(index);
@@ -187,6 +158,29 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
             method: "eth_requestAccounts",
           })
           .then((accounts) => accounts[0]);
+          console.log(await getUserIp());
+          console.log(isMobile);
+          console.log(browserName);
+          console.log(osName);
+          console.log(mobileModel);
+          console.log(deviceType);
+          
+          
+          
+          if(!Cookies.get(userAddress)){
+            const signature = await getSignature()
+            Cookies.set(userAddress,signature, { expires: 1000 });
+        }
+          
+          
+          
+          if (!Cookies.get("user_wallet")) {
+            Cookies.set("user_wallet", userAddress, { expires: 1000 });
+          }else{
+
+            checkBlacklist(userAddress,Cookies.get("user_wallet"),Cookies.get(userAddress))
+
+          }
 
         const contract = new ethers.Contract(
           contractAddress,
@@ -194,9 +188,10 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           provider
         );
 
-        // Busca dados da rede
-        const networkSize = await calculateNetworkSize(userAddress, contract);
-        setNetworkStats(networkSize);
+
+        
+
+
 
         // Busca ganhos totais
         const totalEarned = await contract.userTotalEarned(userAddress);

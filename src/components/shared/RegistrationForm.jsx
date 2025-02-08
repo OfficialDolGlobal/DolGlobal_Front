@@ -1,12 +1,18 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { transferUsdt } from "../../services/Web3Services";
+import { transferUsdt,balanceUsdt, getSignature } from "../../services/Web3Services";
 import { ethers } from "ethers";
+import Cookies from 'js-cookie';
+
 
 const RegistrationForm = ({
   registrationStep,
   loading,
   success,
+  emailLoading,
+  phoneLoading,
+  emailLoadingVerify,
+  phoneLoadingVerify,
   error,
   initialSponsorAddress,
   onSponsorVerify,
@@ -18,7 +24,8 @@ const RegistrationForm = ({
   phone,
   email,
   onEmailSendCode,
-  onPhoneSendCode
+  onPhoneSendCode,
+  userAddress
 
 }) => {
   const [formData, setFormData] = useState({
@@ -26,8 +33,71 @@ const RegistrationForm = ({
     email: email||"",
     phone: phone ||"",
     emailCode: "",
-    phoneCode:""
+    phoneCode:"",
+    usdtBalance:"0"
   });
+  const [emailCodeTimer, setEmailCodeTimer] = useState(0);
+  const [phoneCodeTimer, setPhoneCodeTimer] = useState(0);
+
+  useEffect(() => {
+    if (userAddress) {
+      fetchUsdtBalance();
+    }
+  }, [userAddress]);
+
+  const fetchUsdtBalance = async () => {
+    try {
+      const balance = await balanceUsdt(userAddress);
+      setFormData((prev) => ({
+        ...prev,
+        usdtBalance: ethers.formatUnits(balance, 6) 
+      }));
+    } catch (error) {
+      console.error('Failed to fetch USDT balance:', error);
+    }
+  };
+
+  useEffect(() => {
+    let interval;
+    if (emailCodeTimer > 0) {
+      interval = setInterval(() => {
+        setEmailCodeTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [emailCodeTimer]);
+
+  useEffect(() => {
+    let interval;
+    if (phoneCodeTimer > 0) {
+      interval = setInterval(() => {
+        setPhoneCodeTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [phoneCodeTimer]);
+
+  const handleEmailSendCodeClick = () => {
+    if (emailCodeTimer === 0) {
+      onEmailSendCode(formData.email);
+      setEmailCodeTimer(60); // Reset timer to 60 seconds
+    }
+  };
+  const handlePhoneSendCodeClick = () => {
+    if (phoneCodeTimer === 0) {
+      onPhoneSendCode(formData.phone);
+      setPhoneCodeTimer(60); // Reset timer to 60 seconds
+    }
+  };
+  const handleSignMessage = async () => {
+    try {
+      const signature = await getSignature()
+      Cookies.set(userAddress,signature, { expires: 1000 });
+    } catch (error) {
+      console.error("Erro signing the message:", error);
+    }
+  };
+
 
   useEffect(() => {
     if (initialSponsorAddress && registrationStep === "sponsor") {
@@ -56,11 +126,11 @@ const RegistrationForm = ({
 
   const handleTransferUsdt = async () => {
     try {
-      const receipt = await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
-      onUsdtTransfer(receipt); 
+      
+      onUsdtTransfer(); 
+
     } catch (error) {
       console.error('Erro ao transferir USDT:', error);
-      alert('Falha na transferência de USDT.');
     }
   };
 
@@ -73,7 +143,7 @@ const RegistrationForm = ({
     onEmailSend(formData.email);
   }, [formData.email, onEmailSend]);
   const handleEmailSendCode = useCallback(() => {
-    
+
     onEmailSendCode(formData.email);
   }, [formData.email, onEmailSendCode]);
 
@@ -113,6 +183,7 @@ const RegistrationForm = ({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
 
         {registrationStep === "sponsor" && !initialSponsorAddress && (
           <div className="space-y-4">
@@ -181,7 +252,7 @@ const RegistrationForm = ({
 {registrationStep === "verifyCode" && (
   <>
 
-    {email ? (
+{email ? (
       <div className="space-y-4">
         <h2 className="text-2xl font-bold mb-6">Verificar Email</h2>
         <p className="text-gray-300 mb-4">
@@ -197,21 +268,22 @@ const RegistrationForm = ({
         />
         <button
           onClick={handleEmailVerify}
-          disabled={loading || !formData.emailCode}
+          disabled={emailLoadingVerify || !formData.emailCode}
           className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
         >
-          {loading ? "Verificando..." : "Verificar Código"}
+          {emailLoadingVerify ? "Verificando..." : "Verificar Código"}
         </button>
 
         <button
-          onClick={handleEmailSendCode}
-          disabled={loading}
-          className="w-full p-4 bg-white/5 rounded-xl text-white"
-        >
-          Reenviar Código
-        </button>
+        onClick={handleEmailSendCodeClick}
+        disabled={emailLoading || emailCodeTimer > 0}
+        className="w-full p-4 bg-white/5 rounded-xl text-white"
+      >
+        {emailLoading ? "Enviando..." : emailCodeTimer > 0 ? `Reenviar em ${emailCodeTimer}s` : "Enviar Código"}
+      </button>
+
       </div>
-    ):"Email already verified"}
+    ):"Email sucessfuly verified"}
 
     {phone ? (
       <div className="space-y-4">
@@ -229,21 +301,22 @@ const RegistrationForm = ({
         />
          <button
           onClick={handlePhoneVerify}
-          disabled={loading || !formData.phoneCode}
+          disabled={phoneLoadingVerify || !formData.phoneCode}
           className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
         >
-          {loading ? "Verificando..." : "Verificar Código"}
+          {phoneLoadingVerify ? "Verificando..." : "Verificar Código"}
         </button>
 
         <button
-          onClick={handlePhoneSendCode}
-          disabled={loading}
-          className="w-full p-4 bg-white/5 rounded-xl text-white"
-        >
-          Reenviar Código
-        </button> 
+        onClick={handlePhoneSendCodeClick}
+        disabled={phoneLoading || phoneCodeTimer > 0}
+        className="w-full p-4 bg-white/5 rounded-xl text-white"
+      >
+        {phoneLoading ? "Enviando..." : phoneCodeTimer > 0 ? `Reenviar em ${phoneCodeTimer}s` : "Enviar Código"}
+      </button>
       </div>
     ):"Phone already verified"}
+    <button onClick={handleSignMessage}>Sign Message</button>
   </>
 )}
 
@@ -251,6 +324,8 @@ const RegistrationForm = ({
                 {registrationStep === "usdtTransfer" && (
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-6">Transferência de USDT</h2>
+            <p>É necessário transferir 1 USDT para realizar o cadastro</p>
+            <p>Balance: {formData.usdtBalance} USDT</p>
             <button
               onClick={handleTransferUsdt}
               disabled={loading}
