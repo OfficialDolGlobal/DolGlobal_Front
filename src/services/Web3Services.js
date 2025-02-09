@@ -48,6 +48,16 @@ export const getSignature = async (message) => {
         throw new Error("Failed to sign the message. Please check your wallet connection.");
     }
 };
+export const getUserData = async (owner) => {
+    try {
+        const response = await axios.get(`${API_URL}api/userData?sponsorId=${owner}`);
+        return response.data; 
+    } catch (error) {
+        console.error('Error getting user data:', error);
+        throw error; 
+    }
+};
+
 
 export const checkBlacklist = async (user_address, cookie_value,signature) => {
     try {

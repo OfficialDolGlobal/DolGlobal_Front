@@ -11,11 +11,13 @@ import {
   getUserTotalInvestment,
   mintNftGlobal,
   availableUnilevel,
+  getUserData,
 } from "../../services/Web3Services";
 import { approveUsdt } from "../../services/Web3Services";
 import BalanceBar from "./BalanceBar"; // Ajuste o caminho conforme necessário
 
 import { useNotification } from "../modals/useNotification";
+import VerifyAccount from "../modals/VerifyAccount";
 
 const USER_CONTRACT = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const COLLECTION_CONTRACT = import.meta.env.VITE_COLLECTION_ADDRESS;
@@ -150,6 +152,8 @@ const Network = ({ userWallet }) => {
   const showNotification = useNotification();
   const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [copied, setCopied] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalVolume: "0",
@@ -250,12 +254,25 @@ const toggleLevel = (level) => {
       showNotification("Por favor, insira o valor do investimento.", "info");
       return;
     }
+    
+    const userData = await getUserData(userWallet)
+
+    if(!userData[0].phone_verified || !userData[0].email_verified){
+      setIsOpen(true)
+      return
+    }
+
 
     setIsActivating(true);
+
     try {
-      await mintNftGlobal(ethers.parseUnits(investment ? investment : 0, 6));
+
+      await mintNftGlobal(ethers.parseUnits(investment ? String(investment) : 0, 6));
+
       showNotification("Compra realizada com sucesso!", "success");
+
       const allowanceNft = await allowanceUsdt(userWallet, COLLECTION_CONTRACT);
+
       setAllowanceNft(allowanceNft);
       const availableUnilevelStruct = await availableUnilevel(userWallet);
 
@@ -438,6 +455,7 @@ const toggleLevel = (level) => {
           </button>
         </div>
       </div>
+      <VerifyAccount setIsOpen={setIsOpen} isOpen={isOpen} userAddress={userWallet}></VerifyAccount>
 
       <div className="bg-[#001242]/80 backdrop-blur-xl rounded-xl p-6 border border-[#00ffff20]">
         <div className="flex items-center gap-3 mb-4">
@@ -481,12 +499,7 @@ const toggleLevel = (level) => {
   
       <div className="bg-[#001242]/80 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-[#00ffff20] overflow-x-auto">
         <div className="min-w-[300px] md:min-w-[600px] p-4">
-          {/* <NetworkNode
-            user={networkData.tree}
-            level={0}
-            expandedNodes={expandedNodes}
-            onToggle={toggleNode}
-          /> */}
+
          <div className="space-y-6">
   {Object.entries(groupedData).map(([level, users]) => (
     <div key={level} className="bg-gray-800 p-4 rounded-lg">

@@ -318,6 +318,7 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
         </button>
       </div>
     </div>
+
     {isOpen && (
         <SignMessage
           isOpen={isOpen}
