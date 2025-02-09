@@ -12,7 +12,7 @@ import { LanguageManager } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
-import { checkEmail, checkPhone, getSignature, getUser, transferUsdt } from "./services/Web3Services";
+import { checkEmail, checkPhone, getSignature, getUser, payTracker } from "./services/Web3Services";
 import { ethers } from "ethers";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
@@ -193,6 +193,7 @@ const App = () => {
       const emailExist = await checkEmail(email)
       if(emailExist){
         setEmail(false)
+        setError("Email address already exist")
         throw new Error("Email address already exist"); 
       }else{
         setSuccess("Email successfully verified and set");
@@ -351,7 +352,7 @@ const App = () => {
       setSuccess("")
       setError("")
 
-      const receipt = await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
+      await payTracker();
       const signature = await getSignature(sponsorAddress.toLowerCase())
         const createResponse = await axios.post(`${API_URL}api/create-user`, {
           userAddress: userWallet.toLowerCase(),

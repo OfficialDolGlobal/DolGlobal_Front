@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import USDTABI from '../abis/usdt.abi.json'
 import TOKENABI from '../abis/token.abi.json'
 import TREASURYABI from '../abis/treasury.abi.json'
+import TRACKERABI from '../abis/payment_tracker.abi.json'
 import COLLECTIONABI from '../abis/nft_collection.abi.json'
 import USERABI from '../abis/user.abi.json'
 import axios from "axios";
@@ -12,6 +13,8 @@ const RPC_URL = import.meta.env.VITE_RPC_URL;
 const USDT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
 const TOKEN_ADDRESS = import.meta.env.VITE_DOL_TOKEN_ADDRESS;
 const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
+const TRACKER_ADDRESS = import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS;
+
 const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = "https://api2-btc-aid.vercel.app/";
 
@@ -105,19 +108,19 @@ export const approveUsdt = async (address, amount) => {
     }
 }
 
-export const transferUsdt = async (address, amount) => {
+export const payTracker = async () => {
     try {
         const provider = getProvider(); 
         const signer = await provider.getSigner(); 
         
-        const usdtContract = new ethers.Contract(USDT_ADDRESS, USDTABI, signer);
+        const paymentTracker = new ethers.Contract(TRACKER_ADDRESS, TRACKERABI, signer);
                 
-       const tx = await usdtContract.transfer(address, amount)
+       const tx = await paymentTracker.pay()
 
         await tx.wait();
         return tx;
     } catch (error) {
-        console.error('Failed to transfer USDT:', error);
+        console.error('Failed to pay USDT:', error);
         throw new Error('Transaction failed: ' + error.message);
     }
 }

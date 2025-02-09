@@ -1,8 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { transferUsdt,balanceUsdt, getSignature } from "../../services/Web3Services";
+import { allowanceUsdt, approveUsdt, balanceUsdt } from "../../services/Web3Services";
 import { ethers } from "ethers";
-import Cookies from 'js-cookie';
 
 
 const RegistrationForm = ({
@@ -34,7 +33,9 @@ const RegistrationForm = ({
     phone: phone ||"",
     emailCode: "",
     phoneCode:"",
-    usdtBalance:"0"
+    usdtBalance:"0",
+    usdtAllowance:"0"
+
   });
   const [emailCodeTimer, setEmailCodeTimer] = useState(0);
   const [phoneCodeTimer, setPhoneCodeTimer] = useState(0);
@@ -42,6 +43,7 @@ const RegistrationForm = ({
   useEffect(() => {
     if (userAddress) {
       fetchUsdtBalance();
+      fetchUsdtAllowance();
     }
   }, [userAddress]);
 
@@ -54,6 +56,25 @@ const RegistrationForm = ({
       }));
     } catch (error) {
       console.error('Failed to fetch USDT balance:', error);
+    }
+  };
+  const fetchUsdtAllowance = async () => {
+    try {
+      const allowance = await allowanceUsdt(userAddress,import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS);
+      setFormData((prev) => ({
+        ...prev,
+        usdtAllowance: ethers.formatUnits(allowance, 6) 
+      }));
+    } catch (error) {
+      console.error('Failed to fetch USDT balance:', error);
+    }
+  };
+  const handleApproveUsdt = async () => {
+    try {
+      await approveUsdt(import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS, ethers.parseUnits("1", 6));
+      await fetchUsdtAllowance();
+    } catch (error) {
+      console.error('Erro ao aprovar USDT:', error);
     }
   };
 
@@ -317,13 +338,23 @@ const RegistrationForm = ({
             <h2 className="text-2xl font-bold mb-6">Transferência de USDT</h2>
             <p>É necessário transferir 1 USDT para realizar o cadastro</p>
             <p>Balance: {formData.usdtBalance} USDT</p>
-            <button
-              onClick={handleTransferUsdt}
-              disabled={loading}
-              className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
-            >
-              {loading ? "Transferindo..." : "Transferir USDT"}
-            </button>
+            {parseFloat(formData.usdtAllowance) < 1 ? (
+              <button
+                onClick={handleApproveUsdt}
+                disabled={loading}
+                className="w-full p-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl font-semibold disabled:opacity-50"
+              >
+                {loading ? "Aprovando..." : "Aprovar USDT"}
+              </button>
+            ) : (
+              <button
+                onClick={handleTransferUsdt}
+                disabled={loading}
+                className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
+              >
+                {loading ? "Transferindo..." : "Transferir USDT"}
+              </button>
+            )}
           </div>
         )}
       </div>
