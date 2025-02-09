@@ -30,7 +30,6 @@ export const checkEmail = async (email) => {
         const response = await axios.get(`${API_URL}api/check-email`, {
             params: { email }
         });
-        console.log(response);
         
         return response.data.emailExists; 
     } catch (error) {
@@ -121,6 +120,21 @@ export const payTracker = async () => {
         return tx;
     } catch (error) {
         console.error('Failed to pay USDT:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
+
+export const isUserPaid = async (owner) => {
+    try {
+        const provider = getProvider(); 
+        
+        const paymentTracker = new ethers.Contract(TRACKER_ADDRESS, TRACKERABI, provider);
+                
+       const isPaid = await paymentTracker.hasPaid(owner)
+
+        return isPaid;
+    } catch (error) {
+        console.error('Failed to check payment:', error);
         throw new Error('Transaction failed: ' + error.message);
     }
 }

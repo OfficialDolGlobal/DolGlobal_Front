@@ -12,7 +12,7 @@ import { LanguageManager } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
-import { checkEmail, checkPhone, getSignature, getUser, payTracker } from "./services/Web3Services";
+import { checkEmail, checkPhone, getSignature, getUser, isUserPaid, payTracker } from "./services/Web3Services";
 import { ethers } from "ethers";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
@@ -117,11 +117,13 @@ const App = () => {
             } else {
               try {
                 const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
-
-                if(!response.data.phone_verified){
-                  setRegistrationStep("phone");
-                }else if(!response.data.email_verified){
+                
+                if(!response.data.email_verified){
                   setRegistrationStep("email");
+
+                }else if(!response.data.phone_verified){
+                  setRegistrationStep("phone");
+
                 }else{
                   setUserData(userData);
                   setIsConnected(true);
@@ -198,14 +200,15 @@ const App = () => {
       }else{
         setSuccess("Email successfully verified and set");
         try {
-          const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+          
+          const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+          
           if(response.data.phone_verified){
             setRegistrationStep("verifyCode"); 
           }
         } catch (error) {
           setRegistrationStep("phone");
         }
-        setRegistrationStep("phone");
 
 
       }
@@ -230,8 +233,13 @@ const App = () => {
         throw new Error("Phone number already exist"); 
       }else{
         setSuccess("Phone successfully verified and set");
+        const isPaid = isUserPaid(userWallet)
+        if(isPaid){
+          setRegistrationStep("verifyCode"); 
 
-        setRegistrationStep("usdtTransfer"); 
+        }else{
+          setRegistrationStep("usdtTransfer"); 
+        }
       }
   
 
