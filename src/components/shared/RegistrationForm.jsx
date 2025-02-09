@@ -89,14 +89,6 @@ const RegistrationForm = ({
       setPhoneCodeTimer(60); // Reset timer to 60 seconds
     }
   };
-  const handleSignMessage = async () => {
-    try {
-      const signature = await getSignature()
-      Cookies.set(userAddress,signature, { expires: 1000 });
-    } catch (error) {
-      console.error("Erro signing the message:", error);
-    }
-  };
 
 
   useEffect(() => {
@@ -316,7 +308,6 @@ const RegistrationForm = ({
       </button>
       </div>
     ):"Phone already verified"}
-    <button onClick={handleSignMessage}>Sign Message</button>
   </>
 )}
 

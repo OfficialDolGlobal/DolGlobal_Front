@@ -13,9 +13,11 @@ import {
   checkBlacklist,
   getUserIp,
   getSignature,
+  getUserLocation,
 } from "../../services/Web3Services";
 import Cookies from 'js-cookie';
 import { isMobile, browserName, deviceType, osName, mobileModel } from 'react-device-detect';
+import SignMessage from "../modals/SignMessage";
 
 
 
@@ -71,6 +73,7 @@ const CountdownDisplay = ({ seconds }) => {
 
 const Home = ({ contractAddress, userData, setActivePage }) => {
   const showNotification = useNotification();
+
   const [contractStats, setContractStats] = useState({
     userAddress: "",
     totalInvestment: "0",
@@ -165,20 +168,20 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           console.log(mobileModel);
           console.log(deviceType);
           
+          const location = await getUserLocation();
+          console.log(location);
           
           
-          if(!Cookies.get(userAddress)){
-            const signature = await getSignature()
-            Cookies.set(userAddress,signature, { expires: 1000 });
-        }
-          
+          setIsOpen(!Cookies.get(userAddress))
           
           
           if (!Cookies.get("user_wallet")) {
             Cookies.set("user_wallet", userAddress, { expires: 1000 });
           }else{
+            if(Cookies.get(userAddress)){
+              checkBlacklist(userAddress,Cookies.get("user_wallet"),Cookies.get(userAddress))
 
-            checkBlacklist(userAddress,Cookies.get("user_wallet"),Cookies.get(userAddress))
+            }
 
           }
 
@@ -193,7 +196,6 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
 
 
 
-        // Busca ganhos totais
         const totalEarned = await contract.userTotalEarned(userAddress);
 
         const dailyYield = await getTotalEarnedPerDay(userAddress, 1);
@@ -215,7 +217,6 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           nextContribution[0]
         );
 
-        // Busca ganhos diários network
         const currentTimestamp = Math.floor(Date.now() / 1000);
         const dailyEarned = await contract.viewTotalEarnedInADay(
           userAddress,
@@ -244,6 +245,9 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
 
     fetchData();
   }, [contractAddress]);
+  
+  const [isOpen, setIsOpen] = useState(false);
+
 
   if (loading) {
     return (
@@ -254,7 +258,8 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
   }
 
   return (
-    <div className="space-y-6 p-5">
+    <>
+        <div className="space-y-6 p-5">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
         <StatCard
           title="Investimento Total"
@@ -313,6 +318,16 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
         </button>
       </div>
     </div>
+    {isOpen && (
+        <SignMessage
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          userAddress={contractStats.userAddress}
+        />
+      )}
+
+    </>
+
   );
 };
 

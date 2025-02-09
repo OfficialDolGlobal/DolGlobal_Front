@@ -12,12 +12,11 @@ import { LanguageManager } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
-import { checkEmail, checkPhone, getUser, transferUsdt } from "./services/Web3Services";
+import { checkEmail, checkPhone, getSignature, getUser, transferUsdt } from "./services/Web3Services";
 import { ethers } from "ethers";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = "https://api2-btc-aid.vercel.app/";
-const IPINFO_TOKEN = "3c3735468fa3e5";
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -29,6 +28,8 @@ const App = () => {
   const [registrationStep, setRegistrationStep] = useState("start");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [phoneSignature, setPhoneSignature] = useState("");
+
 
   const [sponsorAddress, setSponsorAddress] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,36 +61,6 @@ const App = () => {
   
   
   
-  async function getUserLocation() {
-    try {
-      // Usando apenas ipinfo.io para obter a localização
-      const response = await axios.get(`https://ipinfo.io/json?token=${IPINFO_TOKEN}`);
-      const { country, region, city, postal, loc } = response.data;
-      const [latitude, longitude] = loc.split(',').map(coord => parseFloat(coord));
-
-      return {
-        country,
-        country_code: country,
-        state: region,
-        city,
-        postcode: postal,
-        latitude,
-        longitude,
-      };
-    } catch (error) {
-      console.error("Error getting location from IP:", error);
-      // Em caso de erro, retornamos um objeto vazio mas válido
-      return {
-        country: "",
-        country_code: "",
-        state: "",
-        city: "",
-        postcode: "",
-        latitude: 0,
-        longitude: 0
-      };
-    }
-  }
 
 
 
@@ -147,14 +118,10 @@ const App = () => {
               try {
                 const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
 
-                if(!response.data.phone_verified || !response.data.email_verified){
-                  setRegistrationStep("verifyCode");
-                  if(!response.data.email_verified){
-                    setEmail(response.data.email)
-                  }
-                  if(!response.data.phone_verified){
-                    setPhone(response.data.phone)
-                  }
+                if(!response.data.phone_verified){
+                  setRegistrationStep("phone");
+                }else if(!response.data.email_verified){
+                  setRegistrationStep("email");
                 }else{
                   setUserData(userData);
                   setIsConnected(true);
@@ -201,8 +168,9 @@ const App = () => {
       }
   
       if (sponsorData[0]) {
-        setSuccess("Sponsor verified successfully");
+        setSuccess("Sponsor verified successfully");        
         setRegistrationStep("email");
+
       } else {
         setRegistrationStep("sponsor"); 
         setSponsorAddress(false)
@@ -228,7 +196,17 @@ const App = () => {
         throw new Error("Email address already exist"); 
       }else{
         setSuccess("Email successfully verified and set");
-        setRegistrationStep("phone"); 
+        try {
+          const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+          if(response.data.phone_verified){
+            setRegistrationStep("verifyCode"); 
+          }
+        } catch (error) {
+          setRegistrationStep("phone");
+        }
+        setRegistrationStep("phone");
+
+
       }
   
 
@@ -289,10 +267,12 @@ const App = () => {
       setError("");
       setSuccess("");
 
-
-
+      const signature = await getSignature(phoneToVerify)
+      setPhoneSignature(signature)
       await axios.post(`${API_URL}api/send-sms`, {
         phoneNumber: phoneToVerify,
+        user_address: userWallet,
+        signature: signature
       });
       setSuccess("Verification code sent to your phone");
     } catch (error) {
@@ -307,13 +287,16 @@ const App = () => {
       setEmailLoadingVerify(true);
       setError("");
 
-
+      const signature = await getSignature(emailToVerify)
       const response = await axios.post(`${API_URL}api/verify-email`, {
         email: emailToVerify,
-        code: codeToVerify.toString().trim()
+        code: codeToVerify.toString().trim(),
+        user_address: userWallet,
+        signature:signature
       });
       if (response.data.success) {
         setEmail("")
+        setSuccess("Email code verified")
         const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
 
         if(response.data.phone_verified && response.data.email_verified){
@@ -338,7 +321,9 @@ const App = () => {
 
       const response = await axios.post(`${API_URL}api/verify-sms`, {
         phoneNumber: phoneToVerify,
-        code: codeToVerify.toString().trim()
+        code: codeToVerify.toString().trim(),
+        user_address: userWallet,
+        signature: phoneSignature
       });
 
       if (response.data.success) {
@@ -366,16 +351,12 @@ const App = () => {
       setSuccess("")
       setError("")
 
-      const location = await getUserLocation();
       const receipt = await transferUsdt("0x15E6372e13C7Fd5A3b96E0CE524115Fde3dB3B70", ethers.parseUnits("1", 6));
-
+      const signature = await getSignature(sponsorAddress.toLowerCase())
         const createResponse = await axios.post(`${API_URL}api/create-user`, {
           userAddress: userWallet.toLowerCase(),
           sponsorAddress: sponsorAddress.toLowerCase(),
-          transactionHash: receipt.hash,
-          email,
-          phone,
-          location: location || {}
+          signature:signature
 
         });
 

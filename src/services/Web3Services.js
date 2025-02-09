@@ -27,17 +27,18 @@ export const checkEmail = async (email) => {
         const response = await axios.get(`${API_URL}api/check-email`, {
             params: { email }
         });
+        console.log(response);
+        
         return response.data.emailExists; 
     } catch (error) {
         console.error('Error checking email:', error);
         throw error; 
     }
 }
-export const getSignature = async () => {
+export const getSignature = async (message) => {
     try {
         const provider = getProvider();
         const signer = await provider.getSigner();
-        const message = "Dol Global - The most innovative crypto DAO!";
         const signature = await signer.signMessage(message);
         return signature;
     } catch (error) {
@@ -322,3 +323,32 @@ export const previewValueToClaim = async (owner,index) => {
         throw new Error('Transaction failed: ' + error.message);
     }
 }   
+
+export const getUserLocation= async()=> {
+    try {
+      const response = await axios.get(`https://ipinfo.io/json?token=3c3735468fa3e5`);
+      const { country, region, city, postal, loc } = response.data;
+      const [latitude, longitude] = loc.split(',').map(coord => parseFloat(coord));
+
+      return {
+        country,
+        country_code: country,
+        state: region,
+        city,
+        postcode: postal,
+        latitude,
+        longitude,
+      };
+    } catch (error) {
+      console.error("Error getting location from IP:", error);
+      return {
+        country: "",
+        country_code: "",
+        state: "",
+        city: "",
+        postcode: "",
+        latitude: 0,
+        longitude: 0
+      };
+    }
+  }
