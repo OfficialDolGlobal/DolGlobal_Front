@@ -248,10 +248,15 @@ const RegistrationForm = ({
 
             <h2 className="text-2xl font-bold mb-6">Digite seu Telefone</h2>
 
-<PhoneInput
-  country={"us"} // País inicial como Brasil
+            <PhoneInput
+  country={"us"} // Define o país inicial
   value={formData.phone}
-  onChange={(phone) => setFormData((prev) => ({ ...prev, phone }))} // Atualiza estado
+  onChange={(phone) =>
+    setFormData((prev) => ({
+      ...prev,
+      phone: phone.startsWith("+") ? phone : `+${phone}`, // Garante que o número tenha o "+"
+    }))
+  }
   inputProps={{
     name: "phone",
     required: true,
@@ -261,7 +266,6 @@ const RegistrationForm = ({
   inputClass="!w-full !bg-white/5 !border !border-white/10 !text-white !placeholder-white/50 
               !rounded-xl !py-4 !pl-16 !pr-4 !focus:outline-none !focus:ring-2 !focus:ring-cyan-400 !transition"
   buttonClass="!absolute !left-4 !top-1/2 !transform !-translate-y-1/2 !bg-transparent !border-none"
-
   searchClass="!bg-[#001952] !text-white !border !border-white/10 !px-2 !py-1 !rounded-md"
   flagDropDownClass="!bg-[#001952] !text-white !border !border-white/10 !rounded-lg !shadow-lg"
   buttonStyle={{
@@ -286,6 +290,7 @@ const RegistrationForm = ({
     boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
   }}
 />
+
 
 
             <button

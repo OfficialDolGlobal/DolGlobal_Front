@@ -199,6 +199,7 @@ const App = () => {
         throw new Error("Email address already exist"); 
       }else{
         setSuccess("Email successfully verified and set");
+        
         try {
           
           const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
@@ -209,7 +210,6 @@ const App = () => {
         } catch (error) {
           setRegistrationStep("phone");
         }
-
 
       }
   
@@ -233,7 +233,7 @@ const App = () => {
         throw new Error("Phone number already exist"); 
       }else{
         setSuccess("Phone successfully verified and set");
-        const isPaid = isUserPaid(userWallet)
+        const isPaid = await isUserPaid(userWallet)
         if(isPaid){
           setRegistrationStep("verifyCode"); 
 
