@@ -3,10 +3,9 @@ import axios from 'axios';
 import { getSignature, getUserData } from "../../services/Web3Services";
 const API_URL = import.meta.env.VITE_API_URL;
 
-const VerifyAccount = ({ isOpen, setIsOpen, userAddress }) => {
+const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhoneSignature, emailSignature, setEmailSignature }) => {
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
-  const [phoneSignature, setPhoneSignature] = useState(null);
   const [emailLoading, setEmailLoading] = useState(false);
   const [phoneLoading, setPhoneLoading] = useState(false);
   const [emailLoadingVerify, setEmailLoadingVerify] = useState(false);
@@ -93,7 +92,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress }) => {
       setError("");
 
       const signature = await getSignature(userData.email);
-
+      setEmailSignature(signature)
       await axios.post(`${API_URL}api/verify-email`, {
         email: userData.email,
         code: emailCode.trim(),

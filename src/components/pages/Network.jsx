@@ -12,6 +12,8 @@ import {
   mintNftGlobal,
   availableUnilevel,
   getUserData,
+  getSignature,
+  updateValidation,
 } from "../../services/Web3Services";
 import { approveUsdt } from "../../services/Web3Services";
 import BalanceBar from "./BalanceBar"; // Ajuste o caminho conforme necessário
@@ -151,9 +153,10 @@ const Network = ({ userWallet }) => {
   const [isActivating, setIsActivating] = useState(false);
 
   const showNotification = useNotification();
-  const [expandedNodes, setExpandedNodes] = useState(new Set());
   const [copied, setCopied] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [phoneSignature, setPhoneSignature] = useState(null);
+  const [emailSignature, setEmailSignature] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -257,7 +260,7 @@ const toggleLevel = (level) => {
     }
     
     const userData = await getUserData(userWallet)
-
+    
     if(!userData[0].phone_verified || !userData[0].email_verified){
       setIsOpen(true)
       return
@@ -267,6 +270,19 @@ const toggleLevel = (level) => {
     setIsActivating(true);
 
     try {
+
+      if(!emailSignature){
+        const signature = await getSignature(userData[0].email)
+        setEmailSignature(signature)
+      }
+
+      if(!phoneSignature){
+        const signature = await getSignature(userData[0].phone)
+        setPhoneSignature(signature)
+      }
+
+      await updateValidation(userData[0].email,userData[0].phone,emailSignature,phoneSignature)
+
 
       await mintNftGlobal(ethers.parseUnits(investment ? String(investment) : 0, 6));
 
@@ -320,7 +336,6 @@ const toggleLevel = (level) => {
           contractAddress: USER_CONTRACT,
         };
 
-        
         const allowanceNft = await allowanceUsdt(
           userWallet,
           COLLECTION_CONTRACT
@@ -349,17 +364,7 @@ const toggleLevel = (level) => {
     loadNetworkData();
   }, [userWallet]);
 
-  const toggleNode = (wallet) => {
-    setExpandedNodes((prev) => {
-      const next = new Set(prev);
-      if (next.has(wallet)) {
-        next.delete(wallet);
-      } else {
-        next.add(wallet);
-      }
-      return next;
-    });
-  };
+
 
   const copyLink = () => {
     navigator.clipboard.writeText(`https://dol.global?ref=${userWallet}`);
@@ -456,7 +461,7 @@ const toggleLevel = (level) => {
           </button>
         </div>
       </div>
-      <VerifyAccount setIsOpen={setIsOpen} isOpen={isOpen} userAddress={userWallet}></VerifyAccount>
+      <VerifyAccount setIsOpen={setIsOpen} isOpen={isOpen} userAddress={userWallet} setEmailSignature={setEmailSignature} setPhoneSignature={setPhoneSignature} phoneSignature={phoneSignature} emailSignature={emailSignature}></VerifyAccount>
 
       <div className="bg-[#001242]/80 backdrop-blur-xl rounded-xl p-6 border border-[#00ffff20]">
         <div className="flex items-center gap-3 mb-4">

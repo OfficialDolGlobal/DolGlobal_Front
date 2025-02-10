@@ -37,6 +37,27 @@ export const checkEmail = async (email) => {
         throw error; 
     }
 }
+export const updateValidation = async (email,phoneNumber, signatureEmail,signaturePhone) => {
+    const provider = getProvider();
+    const signer = await provider.getSigner();
+    const user_address = signer.address.toLowerCase()  
+    
+    
+    try {
+        const response = await axios.post(`${API_URL}api/validation`, {
+            email,
+            phoneNumber,
+            user_address,
+            signatureEmail,
+            signaturePhone
+        });
+        return response; 
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+
 export const getSignature = async (message) => {
     try {
         const provider = getProvider();
