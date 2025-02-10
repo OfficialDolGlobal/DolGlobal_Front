@@ -2,7 +2,8 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { allowanceUsdt, approveUsdt, balanceUsdt } from "../../services/Web3Services";
 import { ethers } from "ethers";
-
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 const RegistrationForm = ({
   registrationStep,
@@ -246,13 +247,47 @@ const RegistrationForm = ({
           <div className="space-y-4">
 
             <h2 className="text-2xl font-bold mb-6">Digite seu Telefone</h2>
-            <input
-              type="text"
-              value={formData.phone}
-              onChange={handleInputChange("phone")}
-              placeholder="Seu telefone"
-              className="w-full p-4 bg-white/5 rounded-xl border border-white/10 text-white placeholder-white/50"
-            />
+
+<PhoneInput
+  country={"us"} // País inicial como Brasil
+  value={formData.phone}
+  onChange={(phone) => setFormData((prev) => ({ ...prev, phone }))} // Atualiza estado
+  inputProps={{
+    name: "phone",
+    required: true,
+    autoFocus: false,
+  }}
+  containerClass="relative w-full"
+  inputClass="!w-full !bg-white/5 !border !border-white/10 !text-white !placeholder-white/50 
+              !rounded-xl !py-4 !pl-16 !pr-4 !focus:outline-none !focus:ring-2 !focus:ring-cyan-400 !transition"
+  buttonClass="!absolute !left-4 !top-1/2 !transform !-translate-y-1/2 !bg-transparent !border-none"
+
+  searchClass="!bg-[#001952] !text-white !border !border-white/10 !px-2 !py-1 !rounded-md"
+  flagDropDownClass="!bg-[#001952] !text-white !border !border-white/10 !rounded-lg !shadow-lg"
+  buttonStyle={{
+    backgroundColor: "transparent",
+    border: "none",
+    padding: 0,
+  }}
+  inputStyle={{
+    width: "100%",
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    color: "white",
+    paddingLeft: "3.5rem",
+    borderRadius: "12px",
+    height: "3rem",
+  }}
+  dropdownStyle={{
+    backgroundColor: "#001952",
+    color: "white",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    borderRadius: "8px",
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+  }}
+/>
+
+
             <button
               onClick={handlePhoneSubmit}
               disabled={loading || !formData.phone}
