@@ -8,7 +8,7 @@ import Profile from "./components/pages/Profile";
 import LandingPage from "./components/pages/LandingPage";
 import NavigationMenu from "./components/shared/NavigationMenu";
 import ContributionModal from "./components/modals/ContributionModal";
-import { LanguageManager } from "./components/LanguageManager";
+import { LanguageManager, useLanguage } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
@@ -386,7 +386,7 @@ const App = () => {
   };
 
   const MobileConnectModal = () => {
-    const { t } = useLanguage();
+    const { t } = useLanguage()
 
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
