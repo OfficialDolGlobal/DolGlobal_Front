@@ -21,6 +21,7 @@ import VerifyAccount from "../modals/VerifyAccount";
 
 const USER_CONTRACT = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const COLLECTION_CONTRACT = import.meta.env.VITE_COLLECTION_ADDRESS;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const NetworkNode = ({ user, level, expandedNodes, onToggle }) => {
 
@@ -198,7 +199,7 @@ const toggleLevel = (level) => {
     const fetchNetworkData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://api2-btc-aid.vercel.app/api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
+        const response = await axios.get(`${API_URL}api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
         const directs = response.data.directs ?? 0;
         const indirects = response.data.indirects ?? 0;
 

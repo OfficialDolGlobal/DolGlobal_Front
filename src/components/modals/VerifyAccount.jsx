@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
 import { getSignature, getUserData } from "../../services/Web3Services";
-const API_URL = "https://api2-btc-aid.vercel.app/";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const VerifyAccount = ({ isOpen, setIsOpen, userAddress }) => {
   const [userData, setUserData] = useState(null);

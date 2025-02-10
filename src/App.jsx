@@ -13,10 +13,9 @@ import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
 import { checkEmail, checkPhone, getSignature, getUser, isUserPaid, payTracker } from "./services/Web3Services";
-import { ethers } from "ethers";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-const API_URL = "https://api2-btc-aid.vercel.app/";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);

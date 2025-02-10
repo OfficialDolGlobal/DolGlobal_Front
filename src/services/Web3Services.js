@@ -16,7 +16,7 @@ const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
 const TRACKER_ADDRESS = import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS;
 
 const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-const API_URL = "https://api2-btc-aid.vercel.app/";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const COLLECTION_ADDRESS = import.meta.env.VITE_COLLECTION_ADDRESS;
 
