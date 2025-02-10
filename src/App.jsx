@@ -79,15 +79,31 @@ const App = () => {
               setUserWallet(address);
               const userData = await getUser(address)
               
+
               if (userData[0]) {
-                setUserData(
-                  userData
-                );
+                setUserData(userData);
                 setIsConnected(true);
                 setActivePage("home");
               } else {
-
-                setRegistrationStep("sponsor");
+                try {
+                  const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+                  
+                  if(!response.data.email_verified){
+                    setRegistrationStep("email");
+  
+                  }else if(!response.data.phone_verified){
+                    setRegistrationStep("phone");
+  
+                  }else{
+                    setUserData(userData);
+                    setIsConnected(true);
+                    setActivePage("home");                  
+                  }
+                } catch (error) {
+                  
+                  setRegistrationStep("sponsor");
+                }
+  
               }
             }
           } catch (error) {
