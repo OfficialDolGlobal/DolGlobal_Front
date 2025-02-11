@@ -14,6 +14,8 @@ import {
   getUserData,
   getSignature,
   updateValidation,
+  getUserTotalEarnedNetwork,
+  getUserTotalLostedNetwork,
 } from "../../services/Web3Services";
 import { approveUsdt } from "../../services/Web3Services";
 import BalanceBar from "./BalanceBar"; // Ajuste o caminho conforme necessário
@@ -25,128 +27,8 @@ const USER_CONTRACT = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const COLLECTION_CONTRACT = import.meta.env.VITE_COLLECTION_ADDRESS;
 const API_URL = import.meta.env.VITE_API_URL;
 
-const NetworkNode = ({ user, level, expandedNodes, onToggle }) => {
 
-  
-  const hasChildren = user.referrals && user.referrals.length > 0;
-  const isExpanded = expandedNodes.has(user.wallet);
 
-  return (
-    <div className={`relative ${level > 0 ? "ml-4 md:ml-6" : ""}`}>
-      <div className="relative flex flex-col md:flex-row items-start md:items-center p-4 bg-[#001242]/80 backdrop-blur-xl rounded-xl border border-[#00ffff20] mb-3 group hover:border-[#00ffff40] transition-all duration-300">
-        {level > 0 && (
-          <>
-            <div className="absolute -left-4 md:-left-6 top-1/2 w-4 md:w-6 h-px bg-[#00ffff20]" />
-            <div className="absolute -left-4 md:-left-6 -top-8 w-px h-8 bg-[#00ffff20]" />
-          </>
-        )}
-
-        {hasChildren && (
-          <button
-            onClick={() => onToggle(user.wallet)}
-            className="absolute -left-6 md:-left-8 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full bg-[#001242] border border-[#00ffff20] hover:border-[#00ffff] transition-all duration-300 z-10"
-          >
-            <ChevronDown
-              className={`w-4 h-4 text-[#00ffff] transform transition-transform duration-300 ${
-                isExpanded ? "rotate-180" : ""
-              }`}
-            />
-          </button>
-        )}
-
-        <div className="flex-1 flex flex-col md:flex-row md:items-center w-full gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00ffff20] to-[#0057ff20] flex items-center justify-center">
-              <Users className="w-6 h-6 text-[#00ffff]" />
-            </div>
-            <div>
-              <div className="text-white font-medium truncate max-w-[120px] md:max-w-[200px]">
-                {user.wallet}
-              </div>
-              <div className="text-[#00ffff]/60 text-sm">Nível {level}</div>
-            </div>
-          </div>
-
-          <div className="flex flex-row md:ml-auto gap-6 mt-2 md:mt-0">
-            <div className="text-center">
-              <div className="text-white/60 text-sm">Volume</div>
-              <div className="text-[#00ffff] font-medium">
-                {ethers.formatUnits(user.volume || "0", 6)} USDT
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="text-white/60 text-sm">Diretos</div>
-              <div className="text-[#00ffff] font-medium">
-                {user.referrals?.length || 0}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {isExpanded && hasChildren && (
-        <div className="pl-4 md:pl-8 border-l border-[#00ffff20]">
-          {user.referrals.map((childAddress) => (
-            <NetworkNodeLoader
-              key={childAddress}
-              userAddress={childAddress}
-              level={level + 1}
-              expandedNodes={expandedNodes}
-              onToggle={onToggle}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const NetworkNodeLoader = ({ userAddress, level, expandedNodes, onToggle }) => {
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        const provider = await getProvider();
-        const contract = new ethers.Contract(
-          USER_CONTRACT,
-          CONTRACT_ABI,
-          provider
-        );
-
-        const user = await contract.getUser(userAddress);
-        const totalEarned = await contract.userTotalEarned(userAddress);
-
-        setUserData({
-          wallet: userAddress,
-          volume: totalEarned.toString(),
-          referrals: user[3],
-          contractAddress: USER_CONTRACT,
-        });
-      } catch (error) {
-        console.error("Erro ao carregar dados do usuário:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadUserData();
-  }, [userAddress]);
-
-  if (loading) return <div className="text-white/60 p-4">Carregando...</div>;
-  if (!userData)
-    return <div className="text-white/60 p-4">Erro ao carregar dados</div>;
-
-  return (
-    <NetworkNode
-      user={userData}
-      level={level}
-      expandedNodes={expandedNodes}
-      onToggle={onToggle}
-    />
-  );
-};
 
 const Network = ({ userWallet }) => {
   const [isApproving, setIsApproving] = useState(false);
@@ -160,10 +42,8 @@ const Network = ({ userWallet }) => {
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalVolume: "0",
-    directReferrals: 0,
-    indirectReferrals: 0,
-    totalUsers: 0,
+    totalEarnedNetwork: 0,
+    totalLostedNetwork: 0,
     maxUnilevel: 0,
     unilevelReached: 0,
   });
@@ -343,19 +223,7 @@ const toggleLevel = (level) => {
           provider
         );
 
-        const user = await contract.getUser(userWallet);
-        const totalEarned = await contract.userTotalEarned(userWallet);
-        const totalInvested = await getUserTotalInvestment(userWallet);
-        const totalEarnedTreasury = await getUserTotalEarnedTreasury(
-          userWallet
-        );
 
-        const userData = {
-          wallet: userWallet,
-          volume: totalEarned.toString(),
-          referrals: user[3],
-          contractAddress: USER_CONTRACT,
-        };
 
         const allowanceNft = await allowanceUsdt(
           userWallet,
@@ -363,15 +231,12 @@ const toggleLevel = (level) => {
         );
         setAllowanceNft(allowanceNft);
         const availableUnilevelStruct = await availableUnilevel(userWallet);
+        const totalEarnedNetwork = await getUserTotalEarnedNetwork(userWallet)
+        const totalLostedNetwork = await getUserTotalLostedNetwork(userWallet)
 
         setStats({
-          totalVolume: ethers.formatUnits(
-            totalInvested + totalEarnedTreasury,
-            6
-          ),
-          directReferrals: stats.directReferrals,
-          indirectReferrals: stats.indirectReferrals,
-          totalUsers: user[3].length,
+          totalEarnedNetwork:totalEarnedNetwork,
+          totalLostedNetwork:totalLostedNetwork,
           maxUnilevel: availableUnilevelStruct[0],
           unilevelReached: availableUnilevelStruct[1],
         });
@@ -514,10 +379,14 @@ const toggleLevel = (level) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <StatCard
-          label="Volume Total"
-          value={`${Number(stats.totalVolume).toLocaleString()} USDT`}
+          label="Total Earned"
+          value={`${Number(stats.totalEarnedNetwork).toLocaleString()} USDT`}
+        />
+                <StatCard
+          label="Total Losted"
+          value={`${Number(stats.totalLostedNetwork).toLocaleString()} USDT`}
         />
 
         <StatCard label="Diretos" value={`${String(networkData.directs)} Usuários`} />

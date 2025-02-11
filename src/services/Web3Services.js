@@ -306,6 +306,7 @@ export const getUserTotalEarnedTreasury = async (owner) => {
     }
 }
 
+
 export const getTimeUntilClaim = async (owner,index) => {
     try {
         const provider = getProvider(); 
@@ -319,6 +320,38 @@ export const getTimeUntilClaim = async (owner,index) => {
 
     } catch (error) {
         console.error('Failed to get time until claim:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
+export const getUserTotalEarnedNetwork = async (owner) => {
+    try {
+        const provider = getProvider(); 
+        
+        const userContract = new ethers.Contract(USER_ADDRESS, USERABI, provider);
+
+        
+        const totalEarned = await userContract.userTotalEarned(owner);
+
+        return totalEarned;
+
+    } catch (error) {
+        console.error('Failed to get total investment:', error);
+        throw new Error('Transaction failed: ' + error.message);
+    }
+}
+export const getUserTotalLostedNetwork = async (owner) => {
+    try {
+        const provider = getProvider(); 
+        
+        const userContract = new ethers.Contract(USER_ADDRESS, USERABI, provider);
+
+        
+        const totalLosted = await userContract.userTotalLosted(owner);
+
+        return totalLosted;
+
+    } catch (error) {
+        console.error('Failed to get total investment:', error);
         throw new Error('Transaction failed: ' + error.message);
     }
 }
