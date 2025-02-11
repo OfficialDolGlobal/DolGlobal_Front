@@ -167,7 +167,7 @@ const Network = ({ userWallet }) => {
     maxUnilevel: 0,
     unilevelReached: 0,
   });
-  const [investment, setInvestment] = useState(10);
+  const [investment, setInvestment] = useState("");
   const [allowanceNft, setAllowanceNft] = useState(0);
   const [networkData, setNetworkData] = useState({ tree: [], directs: 0, indirects: 0 });
 
@@ -200,18 +200,31 @@ const toggleLevel = (level) => {
 
   useEffect(() => {
     const fetchNetworkData = async () => {
+      
       try {
+        let directs, indirects, tree;
+
+        try {
+
+          const response = await axios.get(`${API_URL}api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
+
+          
+          tree = response.data.tree          
+          directs = response.data.directs;
+          indirects = response.data.indirects;
+  
+        } catch (error) {
+          directs = 0;
+          indirects = 0;
+          tree = []
+        }
         setLoading(true);
-        const response = await axios.get(`${API_URL}api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
-        const directs = response.data.directs ?? 0;
-        const indirects = response.data.indirects ?? 0;
 
     
-        setNetworkData({ ...response.data, directs, indirects });        
+        setNetworkData({tree, directs, indirects });        
         setLoading(false);
       } catch (err) {
         
-        setError(err);
         setLoading(false);
       }
     };
@@ -227,6 +240,10 @@ const toggleLevel = (level) => {
   
 
   const handleApprove = async () => {
+    if(investment < 10){
+      showNotification("Minimo necessário é 10 usdt", "error");
+      return;
+    }
     if (!investment) {
       showNotification("Por favor, insira o valor do investimento.", "info");
       return;
@@ -254,6 +271,10 @@ const toggleLevel = (level) => {
   };
 
   const handleBuyRoof = async () => {
+    if(investment < 10){
+      showNotification("Minimo necessário é 10 usdt", "error");
+      return;
+    }
     if (!investment) {
       showNotification("Por favor, insira o valor do investimento.", "info");
       return;
@@ -415,12 +436,12 @@ const toggleLevel = (level) => {
         <div className="mt-6 flex flex-col gap-3 md:flex-row">
           <input
             type="number"
-            value={investment ?? ""}
+            value={investment}
             onChange={(e) => {
-              const value = e.target.value;
-              setInvestment(value === "" ? 0 : value);
-            }}
-            placeholder="Valor em USDT (min. 10)"
+
+              setInvestment(e.target.value);
+            }}  
+            placeholder="10.00"
             className="flex-1 rounded-lg bg-gray-900/50 px-4 py-3 text-white outline-none ring-1 ring-white/10 transition-all focus:bg-gray-900/80 focus:ring-cyan-500/50"
           />
 
@@ -429,6 +450,8 @@ const toggleLevel = (level) => {
               const parsedInvestment = investment
                 ? ethers.parseUnits(String(investment), 6)
                 : ethers.parseUnits("0", 6);
+
+              
               if (allowanceNft < parsedInvestment) {
                 handleApprove();
               } else {
@@ -444,17 +467,15 @@ const toggleLevel = (level) => {
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
                 )}
                 <span className="font-bold text-white">
-                  {isApproving
-                    ? "Aprovando..."
-                    : isActivating
-                    ? "Ativando..."
-                    : allowanceNft <
-                      ethers.parseUnits(
-                        investment ? String(investment) : "0",
-                        6
-                      )
-                    ? "Approve"
-                    : "Ativar Unilevel"}
+                {isApproving
+  ? "Aprovando..."
+  : isActivating
+  ? "Ativando..."
+  : (ethers.parseUnits(String(investment || "0"), 6) <= (allowanceNft))
+  ? "Ativar Unilevel"
+  : "Approve"}
+
+
                 </span>
               </div>
             </div>

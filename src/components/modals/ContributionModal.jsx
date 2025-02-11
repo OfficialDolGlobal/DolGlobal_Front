@@ -11,7 +11,7 @@ const USDT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
 
 const ContributionModal = ({ isOpen, onClose }) => {
   const showNotification = useNotification();
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [balance, setBalance] = useState("0");
@@ -33,11 +33,11 @@ const ContributionModal = ({ isOpen, onClose }) => {
         const formattedBalance = ethers.formatUnits(userBalance, 6);
         setBalance(formattedBalance);
 
-        // Check allowance even without amount to preserve approval state
         const allowance = await usdtContract.allowance(
           userAddress,
           TREASURY_ADDRESS
         );
+        
         setAllowance(allowance);
       } catch (err) {
         console.error("Error checking balance/allowance:", err);
@@ -262,11 +262,11 @@ const ContributionModal = ({ isOpen, onClose }) => {
                 type="number"
                 value={amount}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  setAmount(value === "" ? 0 : value);
-                }}
+
+                  setAmount(e.target.value);
+                }}  
                 className="w-full bg-[#000c2a] border border-[#00ffff20] rounded-lg p-3 text-white outline-none focus:border-[#00ffff] pr-16"
-                placeholder="0.00"
+                placeholder="10.00"
                 min="10"
                 disabled={loading}
               />
@@ -306,9 +306,11 @@ const ContributionModal = ({ isOpen, onClose }) => {
               disabled={loading || !amount || Number(amount) < 10}
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-              {allowance < (amount ? ethers.parseUnits(amount, 6) : 0)
-                ? "Aprovar USDT"
-                : "Confirmar Contribuição"}
+              {allowance >= ethers.parseUnits("10", 6) && 
+              amount >= 10 &&
+              allowance >= ethers.parseUnits(amount, 6)
+                ? "Confirmar Contribuição"
+                : "Aprovar USDT"}
             </button>
           </div>
         </div>

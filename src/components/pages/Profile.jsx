@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { LogOut, Wallet, CircleDot, ExternalLink } from "lucide-react";
 
 const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
+  const [amount, setAmount] = useState(1); 
+
   const truncateAddress = (address) => {
     if (!address) return "";
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
@@ -9,19 +11,17 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
 
   const handleOpenExchange = () => {
     window.open(
-      "https://ramp.alchemypay.org/?type=offRamp&crypto=USDT&network=MATIC&fiat=BRL",
+      `https://pixpay.com.vc/buy?action=buy&currency=USDT&amount=${amount}&address=${userWallet}&msg=dolglobal`,
       "_blank"
     );
   };
 
   const disconnectWallet = async () => {
     try {
-      // Limpa estado local
       setUserWallet(null);
       localStorage.removeItem('userWallet');
       sessionStorage.clear();
       
-      // Desconecta do MetaMask
       if (window.ethereum) {
         await window.ethereum.request({
           method: "eth_requestAccounts",
@@ -29,11 +29,9 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
         });
       }
 
-      // Recarrega a página para limpar todos os estados
       window.location.href = '/';
     } catch (error) {
       console.error("Erro ao desconectar:", error);
-      // Força desconexão mesmo com erro
       window.location.href = '/';
     }
   };
@@ -41,13 +39,10 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
   return (
     <div className="min-h-[80vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md relative">
-        {/* Card Principal */}
         <div className="relative bg-[#001242]/80 backdrop-blur-xl rounded-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#00ffff10] to-[#0057ff10] animate-pulse" />
 
-          {/* Conteúdo */}
           <div className="relative p-6 space-y-6">
-            {/* Header com Avatar */}
             <div className="flex items-center justify-center">
               <div className="relative">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#00ffff20] to-[#0057ff20] flex items-center justify-center">
@@ -59,32 +54,51 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
               </div>
             </div>
 
-            {/* Box Compra/Venda USDT */}
-            <button
-              onClick={handleOpenExchange}
-              className="w-full group transition-all duration-300"
-            >
-              <div className="flex items-center justify-between p-4 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40]">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src="https://s3-eu-west-1.amazonaws.com/tpd/logos/62d7dd0b326019737dcbc711/0x0.png"
-                    alt="AlchemyPay"
-                    className="w-8 h-8 rounded-full"
-                  />
-                  <div className="flex flex-col text-left">
-                    <span className="text-[#00ffff] font-medium">
-                      Comprar/Vender USDT
-                    </span>
-                    <span className="text-xs text-white/60 flex items-center gap-1">
-                      Abrir no navegador <ExternalLink className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-                <span className="text-white/60">→</span>
-              </div>
-            </button>
+            <div className="space-y-4">
 
-            {/* Informações da Carteira */}
+              <button
+                onClick={handleOpenExchange}
+                className="w-full group transition-all duration-300"
+              >
+                <div className="flex items-center justify-between p-4 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40]">
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src="https://pixpay.com.vc/img/logos/logo2.png"
+                      alt="PixPay"
+                      className="h-12 w-18"
+                    />
+                    <div className="flex ml-4 flex-col text-left">
+                      <span className="text-[#00ffff] font-medium">
+                        Comprar USDT
+                      </span>
+                      <span className="text-xs text-white/60 flex items-center gap-1">
+                        Abrir no navegador <ExternalLink className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-white/60">→</span>
+                </div>
+              </button>
+              <div className="text-sm text-white/60">Quantidade de usdt para comprar</div>
+            <input
+                type="number"
+                value={amount}
+                
+                onChange={(e) => {
+                  let value = parseFloat(e.target.value);
+                  if (value < 1) {
+                    value = 1;
+                  } else if (!Number.isInteger(value)) {
+                    value = Math.floor(value * 10) / 10;
+                  }
+                  setAmount(value);
+                }}                
+                className="w-full px-4 py-3 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40] text-white focus:outline-none"
+                min="1"
+                step="0.1" 
+              />
+            </div>
+
             <div className="text-center space-y-2">
               <div className="text-sm text-white/60">Carteira Conectada</div>
               <div className="relative group">
@@ -96,8 +110,6 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
               </div>
             </div>
 
-
-            {/* Botão de Logout */}
             <button
               onClick={disconnectWallet}
               className="w-full relative group"
