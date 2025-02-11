@@ -23,7 +23,7 @@
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "ethers": "^6.0.0",
+    "ethers": "^6.13.5",
     "framer-motion": "^11.16.4",
     "intl-tel-input": "^25.3.0",
     "js-cookie": "^3.0.5",
@@ -39,8 +39,7 @@
     "tailwind-merge": "^3.0.1",
     "tailwindcss": "^3.4.17",
     "viem": "^2.22.11",
-    "wagmi": "^2.14.9",
-    "web3": "^4.16.0"
+    "wagmi": "^2.14.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

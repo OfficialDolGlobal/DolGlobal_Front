@@ -218,11 +218,7 @@ const toggleLevel = (level) => {
 
       try {
         const provider = await getProvider();
-        const contract = new ethers.Contract(
-          USER_CONTRACT,
-          CONTRACT_ABI,
-          provider
-        );
+
 
 
 
@@ -234,10 +230,10 @@ const toggleLevel = (level) => {
         const availableUnilevelStruct = await availableUnilevel(userWallet);
         const totalEarnedNetwork = await getUserTotalEarnedNetwork(userWallet)
         const totalLostedNetwork = await getUserTotalLostedNetwork(userWallet)
-
+        
         setStats({
-          totalEarnedNetwork:totalEarnedNetwork,
-          totalLostedNetwork:totalLostedNetwork,
+          totalEarnedNetwork:ethers.formatUnits(totalEarnedNetwork,6),
+          totalLostedNetwork:ethers.formatUnits(totalLostedNetwork,6),
           maxUnilevel: availableUnilevelStruct[0],
           unilevelReached: availableUnilevelStruct[1],
         });
@@ -383,11 +379,11 @@ const toggleLevel = (level) => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <StatCard
           label="Total Earned"
-          value={`${Number(stats.totalEarnedNetwork).toLocaleString()} USDT`}
+          value={`${Number(stats.totalEarnedNetwork).toLocaleString('en-US')} USDT`}
         />
                 <StatCard
           label="Total Losted"
-          value={`${Number(stats.totalLostedNetwork).toLocaleString()} USDT`}
+          value={`${Number(stats.totalLostedNetwork).toLocaleString('en-US')} USDT`}
         />
 
         <StatCard label="Diretos" value={`${String(networkData.directs)} Usuários`} />
@@ -395,7 +391,6 @@ const toggleLevel = (level) => {
       </div>
   
       <div className="bg-[#001242]/80 backdrop-blur-xl rounded-xl p-4 md:p-6 border border-[#00ffff20] overflow-x-auto">
-        <div className="min-w-[300px] md:min-w-[600px] p-4">
 
          <div className="space-y-6">
   {Object.entries(groupedData).map(([level, users]) => (
@@ -429,7 +424,6 @@ const toggleLevel = (level) => {
 </div>;
 
         </div>
-      </div>
     </div>
 
     

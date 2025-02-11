@@ -3,7 +3,7 @@ import { ethers } from "ethers";
 import { Loader2 } from "lucide-react";
 import USDT_ABI from "../../abis/usdt.abi.json";
 import TREASURY_ABI from "../../abis/treasury.abi.json";
-import { allowanceUsdt, getProvider } from "../../services/Web3Services";
+import { allowanceUsdt, approveUsdt, balanceUsdt, getProvider } from "../../services/Web3Services";
 import { useNotification } from "../modals/useNotification";
 
 const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
@@ -23,17 +23,13 @@ const ContributionModal = ({ isOpen, onClose }) => {
         const provider = await getProvider();
         const signer = await provider.getSigner();
         const userAddress = await signer.getAddress();
-        const usdtContract = new ethers.Contract(
-          USDT_ADDRESS,
-          USDT_ABI,
-          signer
-        );
 
-        const userBalance = await usdtContract.balanceOf(userAddress);
+
+        const userBalance = await balanceUsdt(userAddress);
         const formattedBalance = ethers.formatUnits(userBalance, 6);
         setBalance(formattedBalance);
 
-        const allowance = await usdtContract.allowance(
+        const allowance = await allowanceUsdt(
           userAddress,
           TREASURY_ADDRESS
         );
@@ -49,30 +45,6 @@ const ContributionModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen, amount]);
 
-  const handleMint = async () => {
-    try {
-      const provider = await getProvider();
-      const signer = await provider.getSigner();
-      const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
-
-      const tx = await usdtContract.mint(ethers.parseUnits("1000", 6), {
-        gasLimit: 100000,
-      });
-
-      const receipt = await tx.wait();
-      if (receipt.status === 0) {
-        throw new Error("Transação falhou");
-      }
-
-      const newBalance = await usdtContract.balanceOf(
-        await signer.getAddress()
-      );
-      setBalance(ethers.formatUnits(newBalance, 6));
-    } catch (err) {
-      console.error("Mint error:", err);
-      setError("Erro ao criar USDT de teste");
-    }
-  };
 
   const handleApprove = async () => {
     if (!amount || Number(amount) < 10) {
@@ -84,18 +56,10 @@ const ContributionModal = ({ isOpen, onClose }) => {
     setError("");
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
 
       const approveAmount = ethers.parseUnits(amount, 6);
 
-      const tx = await usdtContract.approve(TREASURY_ADDRESS, approveAmount);
-
-      const receipt = await tx.wait();
-      if (receipt.status === 0) {
-        throw new Error("Transação falhou");
-      }
+      await approveUsdt(TREASURY_ADDRESS, approveAmount);
 
       setAllowance(ethers.parseUnits(String(approveAmount), 6));
       showNotification("Aprovação de saldo realizada!", "success");
