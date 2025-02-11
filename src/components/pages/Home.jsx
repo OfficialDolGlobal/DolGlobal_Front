@@ -14,6 +14,7 @@ import {
   getUserIp,
   getSignature,
   getUserLocation,
+  addLogs,
 } from "../../services/Web3Services";
 import Cookies from 'js-cookie';
 import { isMobile, browserName, deviceType, osName, mobileModel } from 'react-device-detect';
@@ -162,16 +163,10 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           })
           .then((accounts) => accounts[0]);
           const ip = await getUserIp();
-          alert(ip)
-          alert(isMobile);
-          alert(browserName);
-          alert(osName);
-          alert(mobileModel);
-          alert(deviceType);
+
           
           const location = await getUserLocation();
-          console.log(location);
-          
+          await addLogs(ip,location,(isMobile)?mobileModel:osName)          
           
           setIsOpen(!Cookies.get(userAddress))
           
@@ -191,7 +186,6 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           CONTRACT_ABI,
           provider
         );
-
 
         
 

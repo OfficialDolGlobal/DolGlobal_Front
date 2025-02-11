@@ -57,7 +57,25 @@ export const updateValidation = async (email,phoneNumber, signatureEmail,signatu
         throw error; 
     }
 }
+export const addLogs = async (ip,location, device) => {
+    const provider = getProvider();
+    const signer = await provider.getSigner();
+    const user_address = signer.address.toLowerCase()  
+    
+    try {
+        const response = await axios.post(`${API_URL}api/insert-logs`, {
+            user_address,
+            ip,
+            location,
+            device
+        });
+        return response; 
 
+    } catch (error) {
+        console.error('Error adding logs:', error);
+        throw error; 
+    }
+}
 export const getSignature = async (message) => {
     try {
         const provider = getProvider();
