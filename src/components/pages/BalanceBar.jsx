@@ -23,18 +23,18 @@ const BalanceBar = ({ receivedAmount, pendingAmount,available }) => {
         />
       </div>
       
-      <div className="flex justify-between mt-3">
+      <div className="flex justify-between mt-3 flex-col sm:flex-row">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-green-500 to-green-400" />
-          <span className="text-sm text-gray-400">
-            Resgatado: <span className="text-white">{receivedAmount.toFixed(2)} USDT</span>
-          </span>
+          <div className="text-sm sm:flex text-gray-400">
+            <p>Resgatado:</p> <p className="text-white sm:ml-2">{receivedAmount.toFixed(2)} USDT</p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400" />
-          <span className="text-sm text-gray-400">
-            Limite ativo: <span className="text-white">{pendingAmount.toFixed(2)} USDT</span>
-          </span>
+          <div className="text-sm text-gray-400 sm:flex">
+           <p>Limite ativo:</p>  <p className="text-white sm:ml-2">{pendingAmount.toFixed(2)} USDT</p>
+          </div>
         </div>
       </div>
     </div>
