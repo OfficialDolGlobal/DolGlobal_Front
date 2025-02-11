@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie";
-import { getSignature } from "../../services/Web3Services";
+import { checkBlacklist, getSignature } from "../../services/Web3Services";
 
 const SignMessage = ({ isOpen, setIsOpen, userAddress }) => {
   const [isSigning, setIsSigning] = useState(false);
@@ -20,6 +20,10 @@ const SignMessage = ({ isOpen, setIsOpen, userAddress }) => {
         Cookies.set(userAddress, signedMessage, { expires: 1000 });
         setSignature(signedMessage); // Atualiza o estado com a assinatura
       }
+
+
+      await checkBlacklist(userAddress,Cookies.get("user_wallet"),signedMessage)
+      
     } catch (err) {
       setError(err.message);
     } finally {

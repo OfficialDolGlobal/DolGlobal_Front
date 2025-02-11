@@ -162,11 +162,31 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
             method: "eth_requestAccounts",
           })
           .then((accounts) => accounts[0]);
+          const signature = Cookies.get(userAddress);
+
+          if (!Cookies.get("user_wallet")) {
+            Cookies.set("user_wallet", userAddress, { expires: 1000 });
+          }else{
+            if(isValidSignature(signature)){
+              if(verifyMessage("Dol Global - The most innovative crypto DAO!",signature,userAddress)){
+                  await checkBlacklist(userAddress,Cookies.get("user_wallet"),signature)
+              }else{
+                setIsOpen(true)
+  
+              }
+
+            }else{
+              setIsOpen(true)
+
+            }
+
+
+          }
+
           const ip = await getUserIp();
 
           
           const location = await getUserLocation();
-          const signature = Cookies.get(userAddress);
           if(!signature){
             setIsOpen(!Cookies.get(userAddress))
           }else{
@@ -184,25 +204,7 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           }
 
           
-          if (!Cookies.get("user_wallet")) {
-            Cookies.set("user_wallet", userAddress, { expires: 1000 });
-          }else{
-            if(isValidSignature(signature)){
-              if(verifyMessage("Dol Global - The most innovative crypto DAO!",signature,userAddress)){
-                  checkBlacklist(userAddress,Cookies.get("user_wallet"),signature)
-                
-              }else{
-                setIsOpen(true)
-  
-              }
 
-            }else{
-              setIsOpen(true)
-
-            }
-
-
-          }
 
         const contract = new ethers.Contract(
           contractAddress,
