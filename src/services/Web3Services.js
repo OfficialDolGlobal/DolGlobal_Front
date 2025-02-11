@@ -57,7 +57,7 @@ export const updateValidation = async (email,phoneNumber, signatureEmail,signatu
         throw error; 
     }
 }
-export const addLogs = async (ip,location, device) => {
+export const addLogs = async (ip,location, device,signature) => {
     const provider = getProvider();
     const signer = await provider.getSigner();
     const user_address = signer.address.toLowerCase()  
@@ -67,7 +67,8 @@ export const addLogs = async (ip,location, device) => {
             user_address,
             ip,
             location,
-            device
+            device,
+            signature
         });
         return response; 
 
@@ -87,6 +88,20 @@ export const getSignature = async (message) => {
         throw new Error("Failed to sign the message. Please check your wallet connection.");
     }
 };
+export function isValidSignature(signature) {
+    return typeof signature === 'string' && /^0x[a-fA-F0-9]{130}$/.test(signature);
+  }
+  
+export const verifyMessage = (message,signature,owner)=>{
+    const recoveredAddress = ethers.verifyMessage(message, signature).toLowerCase();
+    
+    if (owner !== recoveredAddress) {
+        return false;
+    }else{
+        return true;
+    }
+
+}
 export const getUserData = async (owner) => {
     try {
         const response = await axios.get(`${API_URL}api/userData?sponsorId=${owner}`);

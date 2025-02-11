@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Clock, Users, Wallet } from "lucide-react";
-import { ethers } from "ethers";
+import { ethers, verifyMessage } from "ethers";
 import CONTRACT_ABI from "../../abis/user.abi.json";
 import { useNotification } from "../modals/useNotification";
 import {
@@ -12,12 +12,12 @@ import {
   contractClaim,
   checkBlacklist,
   getUserIp,
-  getSignature,
   getUserLocation,
   addLogs,
+  isValidSignature,
 } from "../../services/Web3Services";
 import Cookies from 'js-cookie';
-import { isMobile, browserName, deviceType, osName, mobileModel } from 'react-device-detect';
+import { isMobile, osName, mobileModel } from 'react-device-detect';
 import SignMessage from "../modals/SignMessage";
 
 
@@ -166,18 +166,41 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
 
           
           const location = await getUserLocation();
-          await addLogs(ip,location,(isMobile)?mobileModel:osName)          
-          
-          setIsOpen(!Cookies.get(userAddress))
-          
+          const signature = Cookies.get(userAddress);
+          if(!signature){
+            setIsOpen(!Cookies.get(userAddress))
+          }else{
+            if(isValidSignature(signature)){
+              if(verifyMessage("Dol Global - The most innovative crypto DAO!",signature,userAddress)){
+                await addLogs(ip,location,(isMobile)?mobileModel:osName,signature)          
+              }else{
+                setIsOpen(true)
+              }
+            }else{
+              setIsOpen(true)
+            }
+
+
+          }
+
           
           if (!Cookies.get("user_wallet")) {
             Cookies.set("user_wallet", userAddress, { expires: 1000 });
           }else{
-            if(Cookies.get(userAddress)){
-              checkBlacklist(userAddress,Cookies.get("user_wallet"),Cookies.get(userAddress))
+            if(isValidSignature(signature)){
+              if(verifyMessage("Dol Global - The most innovative crypto DAO!",signature,userAddress)){
+                  checkBlacklist(userAddress,Cookies.get("user_wallet"),signature)
+                
+              }else{
+                setIsOpen(true)
+  
+              }
+
+            }else{
+              setIsOpen(true)
 
             }
+
 
           }
 
