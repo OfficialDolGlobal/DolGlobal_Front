@@ -182,15 +182,15 @@ const ContributionModal = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-[#001242]/95 rounded-xl p-6 w-full max-w-lg mx-4 relative">
+      <div className="bg-[#001242]/95 rounded-xl sm:p-6 p-4 w-full max-w-lg mx-4 relative">
         {/* Logo */}
-        <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
-          <div className="relative w-24 h-24">
+        <div className="absolute -top-8 sm:-top-12 left-1/2 transform -translate-x-1/2">
+          <div className="relative h-16 w-16 sm:w-24 sm:h-24">
             <div className="absolute inset-0 bg-gradient-to-r from-[#00ffff40] to-[#0057ff40] rounded-xl blur-xl" />
             <div className="relative w-full h-full bg-[#001242] rounded-xl border-2 border-[#00ffff40] flex items-center justify-center transform rotate-45">
               <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAwIDEwIEwgNDAgMTAgTSAxMCAwIEwgMTAgNDAgTSAwIDIwIEwgNDAgMjAgTSAyMCAwIEwgMjAgNDAgTSAwIDMwIEwgNDAgMzAgTSAzMCAwIEwgMzAgNDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzAwZmZmZjEwIiBvcGFjaXR5PSIwLjEiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30 rounded-xl" />
               <div className="absolute inset-0 bg-gradient-to-b from-[#00ffff20] to-transparent" />
-              <span className="text-2xl font-bold text-[#00ffff] transform -rotate-45">
+              <span className="sm:text-2xl text-xl font-bold text-[#00ffff] transform -rotate-45">
                 DOL
               </span>
             </div>
@@ -198,13 +198,13 @@ const ContributionModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        <div className="mt-14 space-y-6">
+        <div className="sm:mt-14 mt-12 sm:space-y-6 space-y-5">
           <h2 className="text-xl font-bold text-[#00ffff] text-center">
             Nova Contribuição
           </h2>
 
           {/* Progress Steps */}
-          <div className="flex justify-center items-center gap-4 mb-6">
+          <div className="flex justify-center items-center gap-3 mb-4 sm:gap-4 sm:mb-6">
             <div
               className={`w-3 h-3 rounded-full ${
                 allowance >=
@@ -247,11 +247,8 @@ const ContributionModal = ({ isOpen, onClose }) => {
             )}
           </div>
 
-          {/* USDT Box */}
-          <div className="p-4 rounded-lg bg-[#000c2a] border border-[#00ffff20]">
-            <div className="text-center">
-              <div className="text-[#00ffff] font-bold mb-2">USDT</div>
-            </div>
+          <div className="sm:p-4 p-3 rounded-lg bg-[#000c2a] border border-[#00ffff20]">
+              <p className="text-[#00ffff] font-bold w-full text-center">USDT</p>
           </div>
 
           {/* Amount Input */}
@@ -282,7 +279,7 @@ const ContributionModal = ({ isOpen, onClose }) => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-4">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
             <button
               onClick={onClose}
               className="flex-1 py-3 rounded-lg border border-[#00ffff40] text-white/80 hover:bg-[#00ffff10] transition-colors"
