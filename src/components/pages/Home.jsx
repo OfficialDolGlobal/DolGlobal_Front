@@ -161,12 +161,13 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
             method: "eth_requestAccounts",
           })
           .then((accounts) => accounts[0]);
-          console.log(await getUserIp());
-          console.log(isMobile);
-          console.log(browserName);
-          console.log(osName);
-          console.log(mobileModel);
-          console.log(deviceType);
+          const ip = await getUserIp();
+          alert(ip)
+          alert(isMobile);
+          alert(browserName);
+          alert(osName);
+          alert(mobileModel);
+          alert(deviceType);
           
           const location = await getUserLocation();
           console.log(location);
