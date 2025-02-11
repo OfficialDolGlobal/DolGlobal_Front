@@ -217,7 +217,6 @@ const toggleLevel = (level) => {
       if (!userWallet) return;
 
       try {
-        const provider = await getProvider();
 
 
 

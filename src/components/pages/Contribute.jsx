@@ -26,7 +26,7 @@ const ContractCard = ({ contract, onClaim, formatNumber, isFinished = false }) =
 
   const TimeDisplay = ({ value, label }) => (
     <div className="flex flex-col items-center">
-      <div className="bg-[#001242] w-16 h-16 rounded-lg flex items-center justify-center border border-[#00ffff30]">
+      <div className="bg-[#001242] w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center border border-[#00ffff30]">
         <span className="text-2xl font-bold text-[#00ffff]">
           {String(value).padStart(2, "0")}
         </span>
@@ -36,8 +36,8 @@ const ContractCard = ({ contract, onClaim, formatNumber, isFinished = false }) =
   );
 
   return (
-    <div className={`bg-[#001242]/80 backdrop-blur-xl rounded-xl p-6 border ${isFinished ? 'border-gray-500/20' : 'border-[#00ffff20]'}`}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className={`bg-[#001242]/80 backdrop-blur-xl rounded-xl p-4 sm:p-6 border ${isFinished ? 'border-gray-500/20' : 'border-[#00ffff20]'}`}>
+      <div className={`grid ${isFinished ? 'grid-cols-1' :'grid-cols-1  lg:grid-cols-2 '} gap-6`}>
         <div>
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -95,25 +95,23 @@ const ContractCard = ({ contract, onClaim, formatNumber, isFinished = false }) =
         </div>
 
         {!isFinished && (
-          <div className="flex flex-col justify-between border-l border-[#00ffff20] pl-6">
+          <div className="flex flex-col justify-between border-l border-[#00ffff20] pl-3 sm:pl-6">
             <div>
               <div className="text-xl text-right mb-2">Próximo Saque</div>
               <div className="text-right">
                 <p className="text-2xl font-bold text-[#00ffff]">
                   {formatNumber(contract.nextClaimUs)} USDT
                 </p>
-                <p className="text-xl text-[#00ffff]">
-                  {formatNumber(contract.nextClaimDol)} DOL
-                </p>
+
               </div>
             </div>
 
             <div className="mt-4">
-              <div className="flex justify-center gap-4 mb-6">
+              <div className="flex justify-center gap-2 sm:gap-4 mb-6">
                 <TimeDisplay value={Math.floor(timeLeft / 3600)} label="h" />
-                <div className="text-[#00ffff] text-2xl font-bold self-center">:</div>
+                <div className="text-[#00ffff] text-xl relative bottom-3 sm:text-2xl font-bold self-center">:</div>
                 <TimeDisplay value={Math.floor((timeLeft % 3600) / 60)} label="m" />
-                <div className="text-[#00ffff] text-2xl font-bold self-center">:</div>
+                <div className="text-[#00ffff] text-xl relative bottom-3 sm:text-2xl font-bold self-center">:</div>
                 <TimeDisplay value={timeLeft % 60} label="s" />
               </div>
 
@@ -211,7 +209,6 @@ const Contribute = () => {
             totalPaid: Number(dailyReturn) * Number(contract.daysPaid),
             totalReturn: ethers.formatUnits(contract.balance, 6),
             nextClaimUs: ethers.formatUnits(nextClaim[0], 6),
-            nextClaimDol: ethers.formatUnits(nextClaim[1], 18),
             timeUntilNext: Number(timeUntilNext),
             claims: contract.claims,
             claimPrice: contract.claimPrice,
