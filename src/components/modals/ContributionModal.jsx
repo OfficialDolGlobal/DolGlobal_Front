@@ -232,23 +232,10 @@ const ContributionModal = ({ isOpen, onClose }) => {
             />
           </div>
 
-          {/* Status and Balance */}
-          <div className="text-center space-y-2">
-            <p className="text-white/60">
-              Saldo: {Number(balance).toLocaleString()} USDT
-            </p>
-            {Number(balance) < 10 && (
-              <button
-                onClick={handleMint}
-                className="text-[#00ffff] underline text-sm hover:text-[#00ffff80]"
-              >
-                Criar USDT de teste
-              </button>
-            )}
-          </div>
+
 
           <div className="sm:p-4 p-3 rounded-lg bg-[#000c2a] border border-[#00ffff20]">
-              <p className="text-[#00ffff] font-bold w-full text-center">USDT</p>
+              <p className="text-[#00ffff] font-bold w-full text-center">USDT {Number(balance).toLocaleString()}</p>
           </div>
 
           {/* Amount Input */}
