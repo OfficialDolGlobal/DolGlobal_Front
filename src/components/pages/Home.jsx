@@ -24,12 +24,12 @@ import SignMessage from "../modals/SignMessage";
 
 
 const StatCard = ({ title, value, icon }) => (
-  <div className="bg-gradient-to-br from-[#001242]/90 to-[#001242]/70 p-5 rounded-xl border border-[#00ffff20] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]">
-    <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-4">
-      <div className="p-3 bg-[#00ffff20] rounded-lg mb-2 sm:mb-0">{icon}</div>
-      <div className="text-center sm:text-left">
+  <div className="bg-gradient-to-br from-[#001242]/90 to-[#001242]/70 sm:p-5 p-2 rounded-xl border border-[#00ffff20] backdrop-blur-xl transition-all duration-300 hover:scale-[1.02]">
+    <div className="flex items-center sm:gap-4 gap-2">
+      <div className="p-3 bg-[#00ffff20] rounded-lg mb-0">{icon}</div>
+      <div className="text-left">
         <h3 className="text-gray-400 text-sm mb-1">{title}</h3>
-        <p className="text-white text-lg font-bold">{value}</p>
+        <p className="text-white sm:text-lg text-sm font-bold">{value}</p>
       </div>
     </div>
   </div>
@@ -79,12 +79,10 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
     userAddress: "",
     totalInvestment: "0",
     dailyYieldUs: "0",
-    dailyYieldDol: "0",
     networkEarnings: "0",
     unilevelDaily: "0",
     timeWithdrawNextClaim: "0",
     valueUsNextClaim: "0",
-    valueDolNextClaim: "0",
     nextContribution: {
       id: 0,
       deposit: 0,
@@ -142,9 +140,8 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
         ...prevStats,
         nextContribution: nextContribution,
         timeWithdrawNextClaim: timeWithdrawNextClaim,
-        valueUsNextClaim: ethers.formatUnits(valueToClaim[0], 6),
-        valueDolNextClaim: ethers.formatUnits(valueToClaim[1]),
-      }));
+        valueUsNextClaim: ethers.formatUnits(valueToClaim[0], 6)
+            }));
     } catch (error) {
       console.error("Erro no claim:", error);
       showNotification("Falha no claim. Tente novamente!", "error");
@@ -247,13 +244,11 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
           userAddress: userAddress,
           totalInvestment: ethers.formatUnits(totalInvestment, 6),
           dailyYieldUs: ethers.formatUnits(dailyYield[0], 6),
-          dailyYieldDol: ethers.formatUnits(dailyYield[1], 18),
           networkEarnings: ethers.formatUnits(totalEarned, 6),
           unilevelDaily: ethers.formatUnits(dailyEarned, 6),
           nextContribution: nextContribution,
           timeWithdrawNextClaim: timeWithdrawNextClaim,
           valueUsNextClaim: ethers.formatUnits(valueToClaim[0], 6),
-          valueDolNextClaim: ethers.formatUnits(valueToClaim[1]),
         });
 
         setLoading(false);
@@ -279,32 +274,28 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
 
   return (
     <>
-        <div className="space-y-6 p-5">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
+        <div className="space-y-6 sm:p-5 p-3">
+      <div className="grid lg:grid-cols-4 sm:grid-cols-2 sm:gap-5 gap-3">
         <StatCard
           title="Investimento Total"
           value={`${Number(contractStats.totalInvestment).toFixed(2)} USDT`}
-          icon={<Wallet className="w-6 h-6 text-[#00ffff]" />}
+          icon={<Wallet className="sm:w-6 sm:h-6 h-4 w-4 text-[#00ffff]" />}
         />
         <StatCard
           title="Claim Diário USDT"
           value={`${Number(contractStats.dailyYieldUs).toFixed(2)} USDT`}
-          icon={<Clock className="w-6 h-6 text-[#00ffff]" />}
+          icon={<Clock className="sm:w-6 sm:h-6 h-4 w-4 text-[#00ffff]" />}
         />
-        <StatCard
-          title="Claim Diário DOL"
-          value={`${Number(contractStats.dailyYieldDol).toFixed(2)} DOL`}
-          icon={<Clock className="w-6 h-6 text-[#00ffff]" />}
-        />
+
         <StatCard
           title="Ganhos da Rede"
           value={`${Number(contractStats.networkEarnings).toFixed(2)} USDT`}
-          icon={<Users className="w-6 h-6 text-[#00ffff]" />}
+          icon={<Users className="sm:w-6 sm:h-6 h-4 w-4 text-[#00ffff]" />}
         />
         <StatCard
-          title="Ganhos Unilevel"
+          title="Ganhos da rede Diario"
           value={`${Number(contractStats.unilevelDaily).toFixed(2)} USDT`}
-          icon={<Users className="w-6 h-6 text-[#00ffff]" />}
+          icon={<Users className="sm:w-6 sm:h-6 h-4 w-4 text-[#00ffff]" />}
         />
       </div>
 
@@ -322,12 +313,7 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
               {Number(contractStats.valueUsNextClaim).toFixed(2)} USDT
             </p>
           </div>
-          <div className="bg-[#00ffff10] p-4 rounded-lg">
-            <p className="text-gray-400 text-sm mb-1">Valor em DOL</p>
-            <p className="text-xl font-bold text-white">
-              {Number(contractStats.valueDolNextClaim).toFixed(2)} DOL
-            </p>
-          </div>
+
         </div>
 
         <button
