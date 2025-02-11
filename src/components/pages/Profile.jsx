@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { LogOut, Wallet, CircleDot, ExternalLink } from "lucide-react";
+import { LogOut, Wallet,  ExternalLink } from "lucide-react";
 
 const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
   const [amount, setAmount] = useState(1); 
@@ -42,15 +42,13 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
         <div className="relative bg-[#001242]/80 backdrop-blur-xl rounded-2xl overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#00ffff10] to-[#0057ff10] animate-pulse" />
 
-          <div className="relative p-6 space-y-6">
+          <div className="relative sm:p-6 p-4 space-y-4 sm:space-y-6">
             <div className="flex items-center justify-center">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-[#00ffff20] to-[#0057ff20] flex items-center justify-center">
+                <div className="sm:w-20 w-16 h-16 sm:h-20 rounded-full bg-gradient-to-r from-[#00ffff20] to-[#0057ff20] flex items-center justify-center">
                   <Wallet className="w-8 h-8 text-[#00ffff]" />
                 </div>
-                <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-[#001242] p-1">
-                  <CircleDot className="w-full h-full text-[#00ffff]" />
-                </div>
+
               </div>
             </div>
 
@@ -60,12 +58,12 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
                 onClick={handleOpenExchange}
                 className="w-full group transition-all duration-300"
               >
-                <div className="flex items-center justify-between p-4 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40]">
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-between sm:p-4 p-2 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40]">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     <img
                       src="https://pixpay.com.vc/img/logos/logo2.png"
                       alt="PixPay"
-                      className="h-12 w-18"
+                      className="sm:h-12 sm:w-20 h-6 w-12"
                     />
                     <div className="flex ml-4 flex-col text-left">
                       <span className="text-[#00ffff] font-medium">
@@ -94,6 +92,7 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
                   setAmount(value);
                 }}                
                 className="w-full px-4 py-3 bg-[#000c2a] rounded-xl border border-[#00ffff20] hover:border-[#00ffff40] text-white focus:outline-none"
+                placeholder="Min 1"
                 min="1"
                 step="0.1" 
               />
@@ -114,7 +113,7 @@ const Profile = ({ userWallet, setUserWallet, handleDisconnect }) => {
               onClick={disconnectWallet}
               className="w-full relative group"
             >
-              <div className="relative px-6 py-3 flex items-center justify-center space-x-3 border border-red-500/20 rounded-xl group-hover:border-red-500/40 transition-all duration-300">
+              <div className="relative sm:px-6 sm:py-3 px-4 py-2 flex items-center justify-center space-x-2 sm:space-x-3 border border-red-500/20 rounded-xl group-hover:border-red-500/40 transition-all duration-300">
                 <LogOut className="w-5 h-5 text-red-500" />
                 <span className="text-red-500 font-medium">
                   Desconectar Carteira
