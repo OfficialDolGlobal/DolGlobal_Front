@@ -9,7 +9,7 @@ const ContributeButton = ({ setIsContributionModalOpen, active }) => (
         className={`menu-item menu-center ${active ? 'active' : ''}`}
       >
       {/* Logo Circle Container */}
-      <div className="relative w-16 h-16 logo-circle">
+      <div className="relative w-14 h-14 sm:w-16 sm:h-16 logo-circle">
         {/* Efeito de rotação de fundo */}
         <div className="absolute inset-0 before:content-[''] before:absolute before:inset-0 before:w-[150%] before:h-[150%] before:bg-conic-gradient before:animate-spin-slow before:origin-center" />
         
