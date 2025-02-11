@@ -22,6 +22,7 @@ import BalanceBar from "./BalanceBar"; // Ajuste o caminho conforme necessário
 
 import { useNotification } from "../modals/useNotification";
 import VerifyAccount from "../modals/VerifyAccount";
+import { formatWallet } from "../../services/utils";
 
 const USER_CONTRACT = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const COLLECTION_CONTRACT = import.meta.env.VITE_COLLECTION_ADDRESS;
@@ -417,7 +418,7 @@ const toggleLevel = (level) => {
         <ul className="mt-2 space-y-2 transition-all duration-300 ease-in-out">
           {users.map((user, index) => (
             <li key={index} className="p-2 border border-[#00ffff20] rounded-md">
-              <p className="text-white">Sponsor: {user.sponsor}</p>
+              <p className="text-white">Sponsor: {formatWallet(user.sponsor)}</p>
               <p className="text-gray-400">Total de Usuários: {user.totalusers}</p>
             </li>
           ))}

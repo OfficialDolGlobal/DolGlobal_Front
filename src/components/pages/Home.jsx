@@ -306,7 +306,6 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
 
         <CountdownDisplay seconds={seconds} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-7">
           <div className="bg-[#00ffff10] p-4 rounded-lg">
             <p className="text-gray-400 text-sm mb-1">Valor em USDT</p>
             <p className="text-xl font-bold text-white">
@@ -314,11 +313,10 @@ const Home = ({ contractAddress, userData, setActivePage }) => {
             </p>
           </div>
 
-        </div>
 
         <button
           onClick={() => handleClaim(contractStats.nextContribution.id)}
-          className="w-full bg-gradient-to-r from-[#00ffff] to-[#0057ff] text-white py-4 rounded-lg font-bold hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02]"
+          className="w-full mt-6 bg-gradient-to-r from-[#00ffff] to-[#0057ff] text-white py-4 rounded-lg font-bold hover:opacity-90 transition-all duration-300 transform hover:scale-[1.02]"
         >
           Realizar Claim
         </button>
