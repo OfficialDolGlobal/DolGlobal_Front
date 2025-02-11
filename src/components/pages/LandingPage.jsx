@@ -22,22 +22,9 @@ import {
   Gift,
   Info, // Adicionado para o DistributionSection
 } from "lucide-react";
-import DistributionSection from "./DistributionSection";
 import { useLanguage } from "../LanguageManager";
 
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    const headerHeight = 80; // altura do header fixo
-    const elementPosition = element.getBoundingClientRect().top;
-    const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
 
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: "smooth",
-    });
-  }
-};
 
 const LandingPage = ({ onConnect }) => {
   const { t, LanguageSelector } = useLanguage();
@@ -61,12 +48,7 @@ const LandingPage = ({ onConnect }) => {
     };
   }, []);
 
-  const highlights = [
-    { value: "$50M", label: t.highlights.totalSupply },
-    { value: "150", label: t.highlights.contractDays },
-    { value: "1%", label: t.highlights.dailyYield },
-    { value: "40", label: t.highlights.networkLevels },
-  ];
+
 
   const features = [
     {
@@ -116,7 +98,7 @@ const LandingPage = ({ onConnect }) => {
 
       {/* Header com navegação */}
       <header className="fixed top-0 w-full z-50 bg-opacity-90 backdrop-blur-sm bg-[#000c2a]">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+        <nav className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center flex-col sm:flex-row">
           <div className="flex items-center space-x-8">
             <div className="logo-circle w-12 h-12 flex items-center justify-center relative">
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-full"></div>
@@ -129,7 +111,7 @@ const LandingPage = ({ onConnect }) => {
           </div>
 
           {/* Seletor de idiomas e botão de conectar */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center  flex-col sm:flex-row justify-center gap-4 py-4">
             <LanguageSelector />
             <button
               onClick={onConnect}
@@ -142,15 +124,15 @@ const LandingPage = ({ onConnect }) => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative pt-52 sm:pt-32 pb-20 px-4 ">
+        <div className=" w-full">
+          <div className="grid md:grid-cols-2 w-full gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
                 <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   {t.hero.title}
                 </span>

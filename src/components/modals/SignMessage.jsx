@@ -18,7 +18,7 @@ const SignMessage = ({ isOpen, setIsOpen, userAddress }) => {
 
       if (signedMessage) {
         Cookies.set(userAddress, signedMessage, { expires: 1000 });
-        setSignature(signedMessage); // Atualiza o estado com a assinatura
+        setSignature(signedMessage); 
       }
 
 

@@ -60,7 +60,7 @@ export const LanguageManager = ({ children, translations }) => {
         </button>
 
         {isLangMenuOpen && (
-          <div className="absolute right-0 mt-2 w-48 py-2 bg-[#000c2a] rounded-lg shadow-xl border border-white/10">
+          <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-48 py-2 bg-[#000c2a] rounded-lg shadow-xl border border-white/10">
             {LANGUAGES.map((lang) => (
               <button
                 key={lang.code}
