@@ -124,9 +124,9 @@ const LandingPage = ({ onConnect }) => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-52 sm:pt-32 pb-20 px-4 ">
-        <div className=" w-full">
-          <div className="grid md:grid-cols-2 w-full gap-12 items-center">
+      <section className="relative pt-56 sm:pt-32 pb-20  px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
