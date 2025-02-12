@@ -487,6 +487,7 @@ const App = () => {
           phoneLoadingVerify={phoneLoadingVerify}
           userAddress={userWallet}
             registrationStep={registrationStep}
+            setLoading={setLoading}
             loading={loading}
             success={success}
             error={error}

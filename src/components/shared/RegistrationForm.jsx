@@ -7,6 +7,7 @@ import "react-phone-input-2/lib/style.css";
 
 const RegistrationForm = ({
   registrationStep,
+  setLoading,
   loading,
   success,
   emailLoading,
@@ -71,11 +72,15 @@ const RegistrationForm = ({
     }
   };
   const handleApproveUsdt = async () => {
+
     try {
+      setLoading(true)
       await approveUsdt(import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS, ethers.parseUnits("1", 6));
       await fetchUsdtAllowance();
     } catch (error) {
       console.error('Erro ao aprovar USDT:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -384,6 +389,8 @@ const RegistrationForm = ({
                 disabled={loading}
                 className="w-full p-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl font-semibold disabled:opacity-50"
               >
+                {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+
                 {loading ? "Aprovando..." : "Aprovar USDT"}
               </button>
             ) : (
@@ -392,6 +399,8 @@ const RegistrationForm = ({
                 disabled={loading}
                 className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
               >
+                                {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+
                 {loading ? "Transferindo..." : "Transferir USDT"}
               </button>
             )}

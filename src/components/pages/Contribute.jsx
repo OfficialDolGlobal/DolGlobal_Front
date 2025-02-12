@@ -140,7 +140,6 @@ const Contribute = () => {
   const [inactiveContracts, setInactiveContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [retryCount, setRetryCount] = useState(0);
   const [showInactive, setShowInactive] = useState(false);
 
   const handleClaim = async (index) => {
@@ -232,7 +231,6 @@ const Contribute = () => {
       setInactiveContracts(processedInactive.filter(Boolean));
       setError("");
       setLoading(false);
-      setRetryCount(0);
 
     } catch (error) {
       console.error('Erro ao carregar contratos:', error);
