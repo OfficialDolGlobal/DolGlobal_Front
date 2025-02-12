@@ -14,7 +14,6 @@ import RegistrationForm from "./components/shared/RegistrationForm";
 import { checkEmail, checkPhone, createUser, getPendingUser, getSignature, getUser, isUserPaid, payTracker, sendEmail, sendSms, verifyEmailBack, verifyPhoneBack } from "./services/Web3Services";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
-const API_URL = import.meta.env.VITE_API_URL;
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(false);

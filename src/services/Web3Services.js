@@ -18,8 +18,6 @@ const TRACKER_ADDRESS = import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS;
 const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_API_KEY;
-
-
 const COLLECTION_ADDRESS = import.meta.env.VITE_COLLECTION_ADDRESS;
 
 
@@ -236,7 +234,9 @@ export const getPendingUser = async (owner) => {
 };
 
 export const getUserTree = async (owner) => {
+    
     try {
+        
         const response = await axios.get(`${API_URL}api/tree?sponsorId=${owner}`,{
             headers: {
                 'x-api-key': API_KEY 
