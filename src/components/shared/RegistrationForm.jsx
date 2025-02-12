@@ -4,6 +4,7 @@ import { allowanceUsdt, approveUsdt, balanceUsdt } from "../../services/Web3Serv
 import { ethers } from "ethers";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { Loader2 } from "lucide-react";
 
 const RegistrationForm = ({
   registrationStep,
@@ -389,9 +390,8 @@ const RegistrationForm = ({
                 disabled={loading}
                 className="w-full p-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl font-semibold disabled:opacity-50"
               >
-                {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+                {loading ?<div className="flex w-full justify-center items-center"><Loader2 className="w-5 h-5 animate-spin mr-4 " />Aprovando...</div>:"Aprovar USDT"}
 
-                {loading ? "Aprovando..." : "Aprovar USDT"}
               </button>
             ) : (
               <button
@@ -399,9 +399,8 @@ const RegistrationForm = ({
                 disabled={loading}
                 className="w-full p-4 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold disabled:opacity-50"
               >
-                                {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+                <p>{loading ? <div className="flex w-full justify-center items-center"><Loader2 className="w-5 h-5 animate-spin mr-4 " />Transferindo...</div>: "Transferir USDT"}</p>
 
-                {loading ? "Transferindo..." : "Transferir USDT"}
               </button>
             )}
           </div>
