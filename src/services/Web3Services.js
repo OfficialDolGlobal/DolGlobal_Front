@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import USDTABI from '../abis/usdt.abi.json'
-import TOKENABI from '../abis/token.abi.json'
 import TREASURYABI from '../abis/treasury.abi.json'
 import TRACKERABI from '../abis/payment_tracker.abi.json'
 import COLLECTIONABI from '../abis/nft_collection.abi.json'
@@ -9,9 +8,7 @@ import axios from "axios";
 
 
 
-const RPC_URL = import.meta.env.VITE_RPC_URL;
 const USDT_ADDRESS = import.meta.env.VITE_USDT_TOKEN_ADDRESS;
-const TOKEN_ADDRESS = import.meta.env.VITE_DOL_TOKEN_ADDRESS;
 const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS;
 const TRACKER_ADDRESS = import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS;
 
@@ -236,7 +233,6 @@ export const getPendingUser = async (owner) => {
 export const getUserTree = async (owner) => {
     
     try {
-        
         const response = await axios.get(`${API_URL}api/tree?sponsorId=${owner}`,{
             headers: {
                 'x-api-key': API_KEY 
