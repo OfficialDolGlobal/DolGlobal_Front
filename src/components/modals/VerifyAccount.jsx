@@ -156,7 +156,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="bg-[#001242]/95 rounded-xl p-6 w-full max-w-lg mx-4 relative">
+      <div className="bg-[#001242]/95 rounded-xl p-6 w-full max-w-lg mx-4 relative max-h-[430px] overflow-y-auto">
         {userData && !userData.email_verified &&
           <div className="space-y-4">
             <h2 className="text-2xl font-bold mb-6">Verify Email</h2>
@@ -192,7 +192,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
           </div>
         }
         {userData && !userData.phone_verified &&
-          <div className="space-y-4">
+          <div className="space-y-4 mt-4">
             <h2 className="text-2xl font-bold mb-6">Verify Phone</h2>
             <p className="text-gray-300 mb-4">We sent a code to: {userData.phone}</p>
             <input

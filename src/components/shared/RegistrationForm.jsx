@@ -345,7 +345,7 @@ const RegistrationForm = ({
     ):"Email sucessfuly verified"}
 
     {phone ? (
-      <div className="space-y-4">
+      <div className="space-y-4 mt-4">
         <h2 className="text-2xl font-bold mb-6">Verificar Telefone</h2>
         <p className="text-gray-300 mb-4">
           Enviamos um código para: {formData.phone}
