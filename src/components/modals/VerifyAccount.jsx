@@ -186,7 +186,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
           onClick={sendEmailCode}
           disabled={emailLoading}
         >
-          {emailLoading ? "Sending..." : "Resend Code"}
+          {emailLoading ? "Sending..." : "Send Code"}
         </button>
       )}
           </div>
@@ -220,7 +220,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
           onClick={sendPhoneCode}
           disabled={phoneLoading}
         >
-          {phoneLoading ? "Sending..." : "Resend Code"}
+          {phoneLoading ? "Sending..." : "Send Code"}
         </button>
       )}
           </div>

@@ -223,8 +223,9 @@ const App = () => {
             setRegistrationStep("verifyCode"); 
           }
         } catch (error) {
-          setRegistrationStep("phone");
         }
+        setRegistrationStep("phone");
+
 
       }
   
