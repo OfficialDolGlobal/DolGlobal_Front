@@ -155,7 +155,7 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black/50 !mt-0 backdrop-blur-sm z-50 flex items-center justify-center">
       <div className="bg-[#001242]/95 rounded-xl p-6 w-full max-w-lg mx-4 relative max-h-[430px] overflow-y-auto">
         {userData && !userData.email_verified &&
           <div className="space-y-4">
