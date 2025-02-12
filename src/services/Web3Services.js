@@ -17,6 +17,8 @@ const TRACKER_ADDRESS = import.meta.env.VITE_PAYMENT_TRACKER_ADDRESS;
 
 const USER_ADDRESS = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = import.meta.env.VITE_API_URL;
+const API_KEY = import.meta.env.VITE_API_KEY;
+
 
 const COLLECTION_ADDRESS = import.meta.env.VITE_COLLECTION_ADDRESS;
 
@@ -28,7 +30,10 @@ export const getProvider = () => {
 export const checkEmail = async (email) => {
     try {
         const response = await axios.get(`${API_URL}api/check-email`, {
-            params: { email }
+            params: { email },
+            headers: {
+                'x-api-key': API_KEY 
+            }
         });
         
         return response.data.emailExists; 
@@ -50,8 +55,105 @@ export const updateValidation = async (email,phoneNumber, signatureEmail,signatu
             user_address,
             signatureEmail,
             signaturePhone
+        }, {
+            headers: {
+                'x-api-key': API_KEY 
+            }
         });
         return response; 
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+export const createUser = async (userAddress, sponsorAddress,signature) => {
+    
+    try {
+        await axios.post(`${API_URL}api/create-user`, {
+            userAddress,
+            sponsorAddress,
+            signature
+          },{
+            headers: {
+                'x-api-key': API_KEY 
+            }});
+
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+export const sendEmail = async (email) => {
+    
+    try {
+        await axios.post(`${API_URL}api/send-email`, {
+            email
+          },{
+            headers: {
+                'x-api-key': API_KEY 
+            }});
+
+
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+export const sendSms = async (phoneNumber,user_address,signature) => {
+    
+    try {
+        await axios.post(`${API_URL}api/send-sms`, {
+            phoneNumber,
+            user_address,
+            signature
+          },{
+            headers: {
+                'x-api-key': API_KEY 
+            }});
+
+
+
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+export const verifyEmailBack = async (email,code,user_address,signature) => {
+    
+    try {
+        const response = await axios.post(`${API_URL}api/verify-email`, {
+            email,
+            code,
+            user_address,
+            signature
+          },{
+            headers: {
+                'x-api-key': API_KEY 
+            }});
+        return response
+
+
+    } catch (error) {
+        console.error('Error updating email:', error);
+        throw error; 
+    }
+}
+export const verifyPhoneBack = async (phoneNumber,code,user_address,signature) => {
+    
+    try {
+        const response = await axios.post(`${API_URL}api/verify-sms`, {
+            phoneNumber,
+            code,
+            user_address,
+            signature
+          }, {headers: {
+            'x-api-key': API_KEY 
+        }});
+    
+
+        return response
+
+
     } catch (error) {
         console.error('Error updating email:', error);
         throw error; 
@@ -69,6 +171,10 @@ export const addLogs = async (ip,location, device,signature) => {
             location,
             device,
             signature
+        }, {
+            headers: {
+                'x-api-key': API_KEY 
+            }
         });
         return response; 
 
@@ -104,10 +210,41 @@ export const verifyMessage = (message,signature,owner)=>{
 }
 export const getUserData = async (owner) => {
     try {
-        const response = await axios.get(`${API_URL}api/userData?sponsorId=${owner}`);
+        const response = await axios.get(`${API_URL}api/userData?sponsorId=${owner}`,{
+            headers: {
+                'x-api-key': API_KEY 
+            }
+        });
         return response.data; 
     } catch (error) {
         console.error('Error getting user data:', error);
+        throw error; 
+    }
+};
+export const getPendingUser = async (owner) => {
+    try {
+        const response = await axios.get(`${API_URL}api/pendingUser?user_address=${owner}`,{
+            headers: {
+                'x-api-key': API_KEY 
+            }
+        });
+        return response; 
+    } catch (error) {
+        console.error('Error getting user pending data:', error);
+        throw error; 
+    }
+};
+
+export const getUserTree = async (owner) => {
+    try {
+        const response = await axios.get(`${API_URL}api/tree?sponsorId=${owner}`,{
+            headers: {
+                'x-api-key': API_KEY 
+            }
+        });
+        return response; 
+    } catch (error) {
+        console.error('Error getting user tree:', error);
         throw error; 
     }
 };
@@ -119,6 +256,10 @@ export const checkBlacklist = async (user_address, cookie_value,signature) => {
             user_address,
             cookie_value,
             signature
+        }, {
+            headers: {
+                'x-api-key': API_KEY 
+            }
         });
         return response.data; 
     } catch (error) {
@@ -136,7 +277,10 @@ export const checkBlacklist = async (user_address, cookie_value,signature) => {
 export const checkPhone = async (phone) => {
     try {
         const response = await axios.get(`${API_URL}api/check-phone`, {
-            params: { phone }
+            params: { phone }, 
+                headers: {
+                    'x-api-key': API_KEY 
+                }
         });
         return response.data.phoneExists; 
     } catch (error) {

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { ChevronDown, Copy, Users, Link as LinkIcon } from "lucide-react";
 import {ChevronRight } from "lucide-react";
 import { ethers } from "ethers";
@@ -16,6 +15,7 @@ import {
   updateValidation,
   getUserTotalEarnedNetwork,
   getUserTotalLostedNetwork,
+  getUserTree,
 } from "../../services/Web3Services";
 import { approveUsdt } from "../../services/Web3Services";
 import BalanceBar from "./BalanceBar"; // Ajuste o caminho conforme necessário
@@ -87,8 +87,7 @@ const toggleLevel = (level) => {
 
         try {
 
-          const response = await axios.get(`${API_URL}api/tree?sponsorId=${String(userWallet).toLowerCase()}`);
-
+          const response = await getUserTree(userWallet)
           
           tree = response.data.tree          
           directs = response.data.directs;

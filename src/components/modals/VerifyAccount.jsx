@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import { getSignature, getUserData } from "../../services/Web3Services";
-const API_URL = import.meta.env.VITE_API_URL;
+import { getSignature, getUserData, sendEmail, sendSms, verifyEmailBack, verifyPhoneBack } from "../../services/Web3Services";
 
 const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhoneSignature, emailSignature, setEmailSignature }) => {
   const [userData, setUserData] = useState(null);
@@ -50,9 +48,8 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
       setError("");
       setSuccess("");
 
-      await axios.post(`${API_URL}api/send-email`, {
-        email: userData.email,
-      });
+      await sendEmail(userData.email)
+
       setSuccess("Verification code sent to your email");
       handleEmailTimer();
 
@@ -71,11 +68,8 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
 
       const signature = await getSignature(userData.phone);
       setPhoneSignature(signature);
-      await axios.post(`${API_URL}api/send-sms`, {
-        phoneNumber: userData.phone,
-        user_address: userData.user_address,
-        signature: signature
-      });
+      await sendSms(userData.phone,userData.user_address,signature)
+
       setSuccess("Verification code sent to your phone");
       handlePhoneTimer();
       
@@ -93,12 +87,8 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
 
       const signature = await getSignature(userData.email);
       setEmailSignature(signature)
-      await axios.post(`${API_URL}api/verify-email`, {
-        email: userData.email,
-        code: emailCode.trim(),
-        user_address: userData.user_address,
-        signature: signature
-      });
+      await verifyEmailBack(userData.email,emailCode.trim(),userData.user_address,signature)
+
       setSuccess("Email verified successfully");
 
     } catch (error) {
@@ -115,12 +105,8 @@ const VerifyAccount = ({ isOpen, setIsOpen, userAddress, phoneSignature, setPhon
       setPhoneLoadingVerify(true);
       setError("");
 
-      await axios.post(`${API_URL}api/verify-sms`, {
-        phoneNumber: userData.phone,
-        code: phoneCode.trim(),
-        user_address: userData.user_address,
-        signature: phoneSignature
-      });
+      await verifyPhoneBack(userData.phone,phoneCode.trim(),userData.user_address,phoneSignature)
+
       setSuccess("Phone verified successfully");
     } catch (error) {
       setError(error.response?.data?.error || "Invalid phone code");

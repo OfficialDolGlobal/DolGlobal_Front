@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Home from "./components/pages/Home";
 import Network from "./components/pages/Network";
 import Contribute from "./components/pages/Contribute";
@@ -12,7 +11,7 @@ import { LanguageManager, useLanguage } from "./components/LanguageManager";
 import { translations } from "./translations";
 import { NotificationProvider } from "./components/modals/useNotification";
 import RegistrationForm from "./components/shared/RegistrationForm";
-import { checkEmail, checkPhone, getSignature, getUser, isUserPaid, payTracker } from "./services/Web3Services";
+import { checkEmail, checkPhone, createUser, getPendingUser, getSignature, getUser, isUserPaid, payTracker, sendEmail, sendSms, verifyEmailBack, verifyPhoneBack } from "./services/Web3Services";
 
 const contractUser = import.meta.env.VITE_USER_REFERRAL_ADDRESS;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -86,7 +85,7 @@ const App = () => {
                 setActivePage("home");
               } else {
                 try {
-                  const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+                  const response = await getPendingUser(address)
                   
                   if(!response.data.email_verified){
                     setRegistrationStep("email");
@@ -131,7 +130,7 @@ const App = () => {
               setActivePage("home");
             } else {
               try {
-                const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(address).toLowerCase()}`);
+                const response = await getPendingUser(address)
                 
                 if(!response.data.email_verified){
                   setRegistrationStep("email");
@@ -217,7 +216,7 @@ const App = () => {
         
         try {
           
-          const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+          const response = await getPendingUser(address)
           
           if(response.data.phone_verified){
             setRegistrationStep("verifyCode"); 
@@ -273,10 +272,9 @@ const App = () => {
       setError("");
       setSuccess("");
 
+      await sendEmail(emailToVerify)
 
-      await axios.post(`${API_URL}api/send-email`, {
-        email: emailToVerify,
-      });
+
       setSuccess("Verification code sent to your email");
 
     } catch (error) {
@@ -294,11 +292,8 @@ const App = () => {
 
       const signature = await getSignature(phoneToVerify)
       setPhoneSignature(signature)
-      await axios.post(`${API_URL}api/send-sms`, {
-        phoneNumber: phoneToVerify,
-        user_address: userWallet,
-        signature: signature
-      });
+      await sendSms(phoneToVerify,userWallet,signature)
+
       setSuccess("Verification code sent to your phone");
     } catch (error) {
       setError(error.message || "Error sending phone code");
@@ -313,16 +308,12 @@ const App = () => {
       setError("");
 
       const signature = await getSignature(emailToVerify)
-      const response = await axios.post(`${API_URL}api/verify-email`, {
-        email: emailToVerify,
-        code: codeToVerify.toString().trim(),
-        user_address: userWallet,
-        signature:signature
-      });
+      const response = await verifyEmailBack(emailToVerify,codeToVerify.toString().trim(),userWallet,signature)
+
       if (response.data.success) {
         setEmail("")
         setSuccess("Email code verified")
-        const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+        const response = await getPendingUser(userWallet)
 
         if(response.data.phone_verified && response.data.email_verified){
           setIsConnected(true);
@@ -343,17 +334,12 @@ const App = () => {
       setPhoneLoadingVerify(true);
       setError("");
 
+      const response = await verifyPhoneBack(phoneToVerify,codeToVerify.toString().trim(),userWallet,phoneSignature)
 
-      const response = await axios.post(`${API_URL}api/verify-sms`, {
-        phoneNumber: phoneToVerify,
-        code: codeToVerify.toString().trim(),
-        user_address: userWallet,
-        signature: phoneSignature
-      });
 
       if (response.data.success) {
         setPhone("")
-        const response = await axios.get(`${API_URL}api/pendingUser?user_address=${String(userWallet).toLowerCase()}`);
+        const response = await getPendingUser(userWallet)
 
         if(response.data.phone_verified && response.data.email_verified){
           setIsConnected(true);
@@ -378,12 +364,8 @@ const App = () => {
 
       await payTracker();
       const signature = await getSignature(sponsorAddress.toLowerCase())
-        const createResponse = await axios.post(`${API_URL}api/create-user`, {
-          userAddress: userWallet.toLowerCase(),
-          sponsorAddress: sponsorAddress.toLowerCase(),
-          signature:signature
+      await createUser(userWallet.toLowerCase(),sponsorAddress.toLowerCase(),signature)
 
-        });
 
         setSuccess("Registration completed successfully");        
         setRegistrationStep("verifyCode");
